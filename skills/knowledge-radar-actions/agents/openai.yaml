@@ -1,0 +1,4 @@
+interface:
+  display_name: '知识科技雷达队列'
+  short_description: '处理知识科技雷达里已勾选的研究行动并回写可追踪结果回执'
+  default_prompt: '使用 $knowledge-radar-actions 处理最近 14 天内已勾选的知识科技雷达行动。'

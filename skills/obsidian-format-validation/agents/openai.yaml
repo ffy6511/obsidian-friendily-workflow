@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Obsidian Format Validation'
+  short_description: 'Check Obsidian heading targets and wikilink fragments.'
+  default_prompt: 'Use $obsidian-format-validation to scan this vault for broken heading and block-reference wikilinks.'

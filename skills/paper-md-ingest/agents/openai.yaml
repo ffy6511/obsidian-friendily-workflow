@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Paper MD Ingest'
+  short_description: 'Build visual literature notes, topic indexes, and project maps from research papers'
+  default_prompt: 'Use $paper-md-ingest to add these papers as paper.md and reading notes with verified public HTML figures, then update topic indexes or project maps as appropriate.'

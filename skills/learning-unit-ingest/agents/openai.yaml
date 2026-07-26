@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Learning Unit Ingest'
+  short_description: 'Build domain learning maps, roadmap canvases, and units from public URLs.'
+  default_prompt: 'Use $learning-unit-ingest to discover public resources for a learning domain, draft an Obsidian learning outline, and create the paired roadmap canvas.'
