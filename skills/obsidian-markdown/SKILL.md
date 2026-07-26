@@ -10,6 +10,7 @@ Create and edit valid Obsidian Flavored Markdown. Obsidian extends CommonMark an
 ## Workflow: Creating an Obsidian Note
 
 1. **Add frontmatter** with properties (title, tags, aliases) at the top of the file. See [PROPERTIES.md](references/PROPERTIES.md) for all property types.
+   - **`title`** and **`timestamp`** are required by the current project's content schema — the build will fail without them.
 2. **Write content** using standard Markdown for structure, plus Obsidian-specific syntax below.
 3. **Link related notes** using wikilinks (`[[Note]]`) for internal vault connections, or standard Markdown links for external URLs.
 4. **Embed content** from other notes, images, or PDFs using the `![[embed]]` syntax. See [EMBEDS.md](references/EMBEDS.md) for all embed types.
@@ -82,6 +83,37 @@ Common types: `note`, `tip`, `warning`, `info`, `example`, `quote`, `bug`, `dang
 
 See [CALLOUTS.md](references/CALLOUTS.md) for the full list with aliases, nesting, and custom CSS callouts.
 
+### Formula and Complex-Concept Callouts
+
+Use an Obsidian-native `NOTE` callout immediately after a formula, special method, or complex concept when the explanation cannot fit in a one- or two-sentence footnote.
+
+- Use `> [!NOTE] 公式解释` for a short explanation that should remain visible.
+- Use `> [!NOTE]+ 公式解释` only when the block should be collapsible but initially expanded.
+- Use `> [!NOTE]- 公式解释` for a content-heavy explanation that should be collapsed by default. Use equally literal titles such as `方法展开` or `概念展开` when the content is not an equation.
+- Keep the surrounding paragraph understandable while the callout is collapsed: state the formula or method's basic purpose in the main narrative, then put the detailed unpacking in the callout.
+- Explain a formula in plain language before enumerating symbols. Define every non-obvious parameter, variable, index, operator, normalization term, and constraint; state where each value comes from and whether it is fixed, observed, or learned when that distinction matters.
+- Explain the overall relationship, not only the symbol table: identify the optimized or computed quantity, how the terms interact, which quantities increase or decrease together, and the trade-off, normalization, constraint, or stopping condition expressed by the equation.
+- For a special method or concept, state its input or precondition, main transformation or decision steps, output or state change, and role in the note's end-to-end context. Add a small example or boundary case when it clarifies a branch.
+- Preserve the source's notation and qualify any interpretation not stated by the source.
+
+Example:
+
+```markdown
+$$
+\pi^*(y\mid x)=\frac{1}{Z(x)}\pi_{\mathrm{ref}}(y\mid x)
+\exp\left(\frac{r(x,y)}{\beta}\right)
+$$
+
+> [!NOTE]- 公式解释
+> Plain-language explanation first, then symbol table.
+>
+> - $x$ is the input, $y$ is the output candidate.
+> - $\pi_{\mathrm{ref}}$ is the fixed reference policy, $r(x,y)$ is the reward.
+> - $\beta > 0$ controls the cost of deviating from the reference.
+> - Overall: higher-reward outputs gain probability exponentially, but
+>   $\pi_{\mathrm{ref}}$ and $\beta$ jointly limit the deviation.
+```
+
 ## Properties (Frontmatter)
 
 ```yaml
@@ -100,7 +132,7 @@ cssclasses:
 
 Default properties: `tags` (searchable labels), `aliases` (alternative note names for link suggestions), `cssclasses` (CSS classes for styling).
 
-Project-specific: `series` (groups sequential notes into a navigable series — see the workflow note above and [PROPERTIES.md](references/PROPERTIES.md#series)).
+Project-specific: `series` (groups sequential notes into a navigable series — see the workflow note above and [PROPERTIES.md](references/PROPERTIES.md#series)), `timestamp` (required publication date — see [PROPERTIES.md](references/PROPERTIES.md#timestamp)).
 
 See [PROPERTIES.md](references/PROPERTIES.md) for all property types, tag syntax rules, and advanced usage.
 
@@ -170,6 +202,26 @@ Text with a footnote[^1].
 [^1]: Footnote content.
 
 Inline footnote.^[This is inline.]
+```
+
+### Terminology Footnotes
+
+Use Obsidian-compatible Markdown footnotes to explain specialized terms that a technically capable reader may still need in order to follow the note. Add the marker at the term's first meaningful occurrence and collect definitions in a dedicated section (e.g. `## 概念注释` / `## Terminology Notes`) near the end of the note.
+
+- Explain both **what the term means** and **what role it plays in this note**; prefer one or two sentences over a dictionary-style definition.
+- Prioritize model families, algorithms, datasets, evaluation protocols, file formats, losses, and note-specific jargon that materially affect understanding.
+- Do not annotate common terms, repeat the same definition, or overload every paragraph with footnotes. The goal is to preserve reading flow while removing likely comprehension blockers.
+- Use stable, descriptive lowercase ids such as `[^deberta]`, `[^cross-encoder]`, or `[^teacher-forcing]`. Ensure every marker has exactly one definition and every definition is referenced.
+- Keep equations in Obsidian-compatible dollar delimiters. Use the formula callout rules above for equations or mechanisms that require structured expansion rather than a short footnote.
+
+Example:
+
+```markdown
+候选生成器使用 DeBERTa[^deberta] 对页面元素排序。
+
+## 概念注释
+
+[^deberta]: **DeBERTa**：一种 encoder-only 预训练语言模型。本文将它用作高效元素排序器。
 ```
 
 ## Complete Example

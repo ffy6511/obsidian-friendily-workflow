@@ -66,68 +66,17 @@ Treat `## 我的笔记` as the primary learning artifact, not a blank scratchpad
 
 The only exception is an explicit user request to reserve `我的笔记` for their own blank writing. Do not fabricate personal experience or claim the prose was written by the user; write it as complete study notes prepared for the user.
 
-### Mermaid 流程图
+### Mermaid Diagrams
 
-当学习单元需要呈现机制、事件流或生命周期时，优先用 `stateDiagram-v2` 绘制多数以状态和迁移为主的流程，例如执行循环、任务状态、异步通知、重试与恢复。仅当图的重点是静态拓扑、并行分叉或组件连接时，才使用 `flowchart`。
-
-除 Mermaid 语法关键字及必须保留的代码、协议或专有标识外，图中的状态名称、迁移说明和注释必须使用用户的工作语言；中文笔记默认全部使用中文。
-
-对于每个 `stateDiagram-v2`，只统计具名业务状态，不计 Mermaid 的 `[*]` 入口和出口标记。业务状态为四个及以下时使用 `direction LR`；五个及以上时使用 `direction TB`。若图仍然过密，应拆为总览图与聚焦子图，不要强行塞进单张图。
+Follow the Mermaid diagram rules in the `obsidian-markdown` skill. Prefer `stateDiagram-v2` for lifecycle and state-transition diagrams; use `flowchart` only for static topology.
 
 ### Terminology Footnotes
 
-Use Obsidian-compatible Markdown footnotes when a specialized term may interrupt a learner's understanding. Add the marker at the term's first meaningful occurrence and collect definitions in the optional `## 概念注释` section before `## 我的笔记`.
-
-- Explain both **what the term means** and **why it matters in this learning unit**. Keep each definition to one or two sentences.
-- Prioritize prerequisites, model or algorithm names, protocols, losses, evaluation terms, abbreviations, and source-specific jargon needed to follow the material.
-- Do not annotate every technical word or repeat definitions. Preserve a clean main narrative and only remove likely comprehension blockers.
-- Use stable, descriptive lowercase ids such as `[^teacher-forcing]` or `[^cross-attention]`. Ensure every marker has exactly one definition and every definition is referenced.
-- When a concept needs more than a short definition, use an adjacent callout instead of hiding the explanation in a long footnote. For a full derivation, comparison, or reusable explanation, also create or link a dedicated learning unit and leave a concise local explanation in the current note.
-
-Example:
-
-```markdown
-训练时常使用 teacher forcing[^teacher-forcing]，因此推理阶段可能出现 exposure bias[^exposure-bias]。
-
-## 概念注释
-
-[^teacher-forcing]: **Teacher forcing**：训练序列模型时，把真实的前序输出作为下一步输入。本单元用它解释训练条件与实际生成条件为何不同。
-
-[^exposure-bias]: **Exposure bias**：模型训练时主要看到正确历史，推理时却必须面对自己的历史输出，因此错误可能逐步累积。
-
-## 我的笔记
-```
+Follow the terminology footnote rules in the `obsidian-markdown` skill. Collect definitions in the optional `## 概念注释` section before `## 我的笔记`. Add markers at the first meaningful occurrence of each specialized term.
 
 ### Formula and Complex-Concept Callouts
 
-Use an Obsidian-native `NOTE` callout immediately after a formula, special method, or complex concept when the reader needs more than the one- or two-sentence definition allowed in `## 概念注释`. Keep terminology footnotes for unfamiliar keywords; use callouts for local mechanism-level explanation.
-
-- Use `> [!NOTE] 公式解释` for a short explanation that should remain visible. Use `> [!NOTE]+ 公式解释` only when the block should be collapsible but initially expanded.
-- Use `> [!NOTE]- 公式解释` for a content-heavy explanation that should be collapsed by default. Use equally literal titles such as `方法展开` or `概念展开` when the content is not an equation.
-- Keep the surrounding paragraph understandable while the callout is collapsed: state the formula or method's basic purpose in the main narrative, then put the detailed unpacking in the callout.
-- Explain a formula in plain language before enumerating symbols. Define every non-obvious parameter, variable, index, operator, normalization term, and constraint; state where each value comes from and whether it is fixed, observed, or learned when that distinction matters.
-- Explain the overall relationship, not only the symbol table: describe what is optimized or computed, how the terms interact, which quantities increase or decrease together, and what trade-off, normalization, or stopping condition the equation expresses.
-- For a special method or concept, state its input or precondition, main transformation or decision steps, output or state change, and role in the larger learning flow. Add a small example or boundary case when it removes ambiguity.
-- Preserve source notation and Obsidian-compatible dollar delimiters. Do not use a callout as a substitute for a dedicated unit when the derivation or background is independently reusable.
-
-Example:
-
-```markdown
-$$
-\pi^*(y\mid x)=\frac{1}{Z(x)}\pi_{\mathrm{ref}}(y\mid x)
-\exp\left(\frac{r(x,y)}{\beta}\right)
-$$
-
-> [!NOTE]- 公式解释
-> 这是最大化“奖励减去 KL 惩罚”后得到的最优策略形式。它可以读成：先沿用参考策略对输出 $y$ 的偏好，再按奖励做指数加权，最后归一化为概率分布。
->
-> - $x$ 是输入，$y$ 是候选输出；$\pi^*(y\mid x)$ 是优化后的策略概率。
-> - $\pi_{\mathrm{ref}}(y\mid x)$ 是固定的参考策略，$r(x,y)$ 是输出获得的奖励。
-> - KL 惩罚衡量整个策略分布偏离参考策略的程度；在这个闭式解中，它通过 $\pi_{\mathrm{ref}}$ 与 $\beta$ 共同体现。
-> - $\beta>0$ 控制偏离参考策略的成本；$\beta$ 越大，奖励带来的重加权越弱，策略越接近参考策略。
-> - $Z(x)$ 是对所有候选输出求和得到的归一化项，保证最终概率之和为 1。
-> - 整体关系是：奖励越高的输出概率会指数上升，但参考策略和 $\beta$ 共同限制策略偏移的幅度。
-```
+Follow the formula callout rules in the `obsidian-markdown` skill. Use `> [!NOTE]- 公式解释` for collapsed explanations after equations or complex mechanisms in `知识总览` or `我的笔记`.
 
 ## Domain Maps
 

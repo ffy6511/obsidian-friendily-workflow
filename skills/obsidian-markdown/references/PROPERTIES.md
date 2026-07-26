@@ -46,6 +46,30 @@ current project's theme (thought-lite) and its content collections.
 When editing notes under `src/content/{note,jotting,preface,information}/`,
 include them in frontmatter.
 
+### `timestamp`
+
+**Required** by the `note` and `jotting` collection schemas. The build
+will fail without it. Used for article ordering, "latest" sections,
+series navigation order, and the heatmap on the homepage.
+
+```yaml
+---
+title: My Note
+timestamp: 2026-07-26T00:00:00+08:00
+---
+```
+
+Accepts any YAML date or datetime format parseable by JavaScript `Date`:
+
+```yaml
+timestamp: 2026-07-26               # date only
+timestamp: 2026-07-26T00:00:00+08:00 # ISO datetime with timezone
+timestamp: 2026-07-26 00:00:00       # space-separated datetime
+```
+
+Prefer ISO 8601 with timezone (`+08:00`) so the displayed time matches
+the author's local timezone.
+
 ### `series`
 
 Groups related notes into a navigable series. The value is a plain
