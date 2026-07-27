@@ -20,7 +20,7 @@ This skill assumes Obsidian by default. Use wikilinks, aliases, embeds, backlink
 5. Convert the selected papers into a manifest with concise summaries in the user's working language before ingesting. Add project relevance only when the user explicitly supplies a project or the paper's project ownership is already clear from the request.
 6. Prefer official arXiv HTML. Convert it to `paper.md` and retain figure images as remote Markdown links. If a legacy paper has no official HTML, a public HTML rendering mirror may supply figures, but the canonical note source remains the official arXiv/PDF URL.
 7. If HTML is unavailable, use arXiv source and convert the TeX tree to `paper.md`.
-8. If source is unavailable, extract text from the official PDF into `paper.md`.
+8. If source is unavailable, read `references/conversion.md`, check or install the pinned `lit` CLI, route OCR with `lit is-complex`, and convert the official PDF into a validated temporary Markdown file before replacing `paper.md`.
 9. Create or update one reading-note `.md` file under `library/<paper-id>/` in the user's working language as the canonical Obsidian note for the paper. `NOTES.md` is the default; a short title filename is allowed when it improves human navigation. When `paper.md` exposes usable HTML figures, select the one to three that explain the paper's mechanism, protocol, or main result and add them to the note with a concise reading cue; omit decorative or redundant figures.
 10. Add a `source` field in the reading note frontmatter pointing to the best human-readable official source, usually arXiv HTML or official PDF.
 11. Update `PAPERS.md` manually after batch generation.
@@ -51,7 +51,7 @@ For new or partially formed workspaces, use `references/workspace.md` as the ini
 
 ## Obsidian Literature Workflow
 
-Before creating or updating project maps, topic indexes, reading-note figures, or when unsure about wikilinks, embeds, aliases, heading links, frontmatter, or backlinks, read `references/obsidian.md`. Before converting HTML or choosing figures, read `references/conversion.md`.
+Before creating or updating project maps, topic indexes, reading-note figures, or when unsure about wikilinks, embeds, aliases, heading links, frontmatter, or backlinks, read `references/obsidian.md`. Before converting HTML, TeX, or PDF, debugging conversion quality, or choosing figures, read `references/conversion.md`.
 
 Treat the non-`paper.md` reading note under `library/<paper-id>/` as the canonical Obsidian note for a paper. Treat `projects/<project>.md` as the human and agent reading entry for a project; treat `topics/<topic>.md` as a cross-project navigation index, not a second paper store or a project map.
 
@@ -114,22 +114,23 @@ Manifest schema:
     "tags": ["feedback-learning", "designer-feedback", "ui-generation"],
     "source": "arxiv:2509.16779",
     "note_filename": "Improving UI Generation from Designer Feedback.md",
-    "summary": ["这篇论文解决的问题是：...", "它使用的方法是：...", "主要效果或发现是：..."],
+    "summary": [
+      "核心贡献：用 1-2 句直白语言说明论文做成了什么。",
+      "领域痛点：说明它处理的现实问题，以及为什么值得关注。"
+    ],
     "figures": [
       {
         "url": "https://example.org/figure-1.png",
         "alt": "Figure 1: concise accessible description",
         "caption": "图 1：原图表达的机制或实验关系。",
-        "takeaway": "阅读提示：这张图应如何帮助理解核心方法。"
+        "takeaway": "阅读提示：这张图应如何帮助理解方法。"
       }
     ],
     "notes": {
-      "positioning": "这篇论文在相关方向中的定位：...",
-      "background": "问题背景：...",
-      "method": "核心方法：...",
-      "contributions": ["贡献 1：...", "贡献 2：...", "贡献 3：..."],
-      "results": "实验与结果：...",
-      "limitations": "局限与边界：..."
+      "problem_definition": "具体问题、重要性，以及既有方案的根本瓶颈。",
+      "method": "逐模块解释方法；困难部分可在对应核心要点后加入简洁的 Q:/A: 和具体例子。",
+      "experiments": "实验支持哪些主张、关键图表如何阅读，以及证据是否充分。",
+      "limitations_open_questions": "真实局限、部署风险和自然延伸出的开放问题。"
     },
     "relevance": "可选：仅在请求明确指定项目时，写该论文与项目的关系。"
   }
@@ -165,42 +166,41 @@ tags:
 ---
 ```
 
-The body must use the user's working language, inferred from the request and manifest. Keep the section structure equivalent even when translating headings.
+The body must use the user's working language, inferred from the request and manifest. Keep the section structure equivalent even when translating headings. Write like a senior researcher teaching an intelligent newcomer: start high-level, make the causal chain explicit, and prefer concrete examples over jargon or encyclopedic accumulation.
+
+### Table-first comparisons
+
+Use a compact Markdown table whenever the content compares three or more parallel items through repeated dimensions. Typical cases include task or capability levels, component responsibilities, method variants, benchmark settings, claim-to-evidence mappings, and systems compared by the same attributes. If a paragraph repeatedly expresses `<item> -> <scope> -> <requirement/result>`, convert it into rows and make those repeated fields the columns.
+
+Keep prose before or after the table only for the causal conclusion, caveat, or reading guidance that the cells do not express. Do not restate every row in prose. Keep numbered lists for genuine execution sequences where order and dependency matter more than side-by-side comparison, and keep prose for a single causal chain without stable repeated fields.
 
 ```markdown
-## 三句话摘要
+## 30 秒高层摘要
 
-这篇论文解决的问题是：...
-它使用的方法是：...
-主要效果或发现是：... ^summary
+用 1-2 句直白语言说明核心贡献，让没有读过论文的人也能理解。
+指出它处理的领域痛点，以及为什么值得关注。 ^summary
 
-## 论文定位
+## 问题定义
 
-这篇论文属于什么方向？它在相关工作中解决哪一类问题？
+论文具体解决什么问题？为什么重要？既有方法的根本瓶颈是什么？
 
-## 问题背景
+## 方法
 
-作者为什么认为这个问题重要？现有方法、benchmark、系统或评测协议哪里不够？
+先给出端到端总览，再按论文的实际模块逐一解释输入、处理、输出和控制信号。公式先解释物理意义，再给公式和符号。
 
-## 核心方法
+当某个核心要点仅靠直接说明仍然难以理解时，可紧跟该要点补充简洁的 Q&A。Q&A 是局部可选解释，不得单独设章，也不得集中收纳与不同要点相关的问题：
 
-论文提出了什么系统、数据集、benchmark、算法、checklist 或评估流程？
+**Q:** 这个步骤为什么需要？
 
-核心方法必须是扩展章节，而不是只写一段概括。开头先用 1-3 段概括整体方法、系统或评测流程；随后用 `###` 子标题拆解关键做法，让读者可以先扫总览，再按需深读机制细节。子标题应按论文实际贡献命名，例如 `### 任务实例 schema`、`### 执行式评测 pipeline`、`### 数据污染检测`、`### State-diff contract`、`### Scenario family 生成`。每个子标题下说明输入、处理步骤、输出/判分信号、隐藏信息或质量控制；如果论文涉及 contamination、cheating、资源预算、可复现环境、validator、judge 或 evaluator，这些机制必须在核心方法或紧邻方法章节中记录清楚，不要只放在实验/局限里一笔带过。
+**A:** 先说明直觉，再用一个具体例子走完该步骤。
 
-## 主要贡献
+## 实验：证据如何支撑结论
 
-- ...
-- ...
-- ...
+说明每组实验要支持哪项主张、关键图表与数字应如何阅读、证据是否充分，以及缺少哪些 baseline 或 ablation。
 
-## 实验与结果
+## 局限与开放问题
 
-它怎么验证自己的方法？用了哪些 benchmark、baselines、metrics 或案例？结果说明了什么？
-
-## 局限与边界
-
-哪些场景没有覆盖？关键假设是什么？可能有什么偏差、风险或后续待验证点？
+直接说明真实局限、部署或实践风险，以及自然延伸出的后续研究方向。
 
 ## 概念注释
 
@@ -211,7 +211,9 @@ The body must use the user's working language, inferred from the request and man
 
 `## 与当前项目的关系` 是可选章节。只有 manifest 提供非空 `relevance`，且该关系来自请求中指定的项目时才写入；没有项目上下文时不要留下空标题、`TODO` 或泛泛的关联判断。
 
-Keep the three-sentence summary section short and stable. End the last summary line with the fixed block id `^summary` so project maps can embed only the summary content via `![[...#^summary]]`. Use the expanded sections for single-paper reading and future agent handoff. If the paper has not been deeply read yet, write a conservative initial note and mark uncertain details in the user's working language rather than overclaiming.
+Keep the 30-second summary short and stable. It must contain both the core contribution and the domain pain point; end its final line with the fixed block id `^summary` so project maps can embed only the summary content via `![[...#^summary]]`. Use the expanded sections for single-paper reading and future agent handoff. If the paper has not been deeply read yet, write a conservative initial note and mark uncertain details in the user's working language rather than overclaiming.
+
+Do not add separate `基本信息` / `Basic Info`, `论文定位` / `Paper Positioning`, or `主要贡献` / `Main Contributions` sections. Frontmatter already carries metadata, the high-level summary carries the core contribution, and Problem Definition carries only the prior-work context needed to understand the paper's problem.
 
 ### Terminology Footnotes
 
@@ -219,11 +221,11 @@ Follow the terminology footnote rules in the `obsidian-markdown` skill. Use a `#
 
 ### Formula and Complex-Concept Callouts
 
-Follow the formula callout rules in the `obsidian-markdown` skill. Use `> [!NOTE]- 公式解释` for collapsed explanations after equations in `核心方法`, `实验与结果`, and any user-requested additions. The formula callout requirement applies throughout the reading note whenever an equation carries part of the method.
+Follow the formula callout rules in the `obsidian-markdown` skill. Use `> [!NOTE]- 公式解释` for collapsed explanations after equations in `方法`, `实验：证据如何支撑结论`, and any user-requested additions. Explain the equation's physical meaning before presenting the formula. The formula callout requirement applies throughout the reading note whenever an equation carries part of the method.
 
-### Core Method: blocking completeness requirement
+### Method: blocking completeness requirement
 
-`## 核心方法` / `## Core Method` is the main handoff surface. A one-sentence description, a list of component names, or a restatement of the abstract is incomplete and must not be handed off as a reading note.
+`## 方法` / `## Method` is the main handoff surface. A one-sentence description, a list of component names, or a restatement of the abstract is incomplete and must not be handed off as a reading note.
 
 Read the paper's method sections in `paper.md` before drafting this section. Start with one short end-to-end overview, then use `###` subheadings to make the mechanism executable in the reader's head. Each relevant subheading must state the concrete input or state, transformation steps, output or state change, and the signal that controls, validates, or terminates the step. Preserve original notation, equations, schemas, action names, and thresholds when they carry the mechanism; explain them in the user's working language instead of replacing them with generic prose.
 
@@ -234,11 +236,13 @@ Cover the applicable items below. Omit only items the paper truly does not defin
 - **Benchmark / dataset**: task contract, instance schema, source data, construction pipeline, splits, human or automatic validation, evaluator, metrics, hidden information, and contamination or leakage controls.
 - **Cost / resource method**: budget definition, accounting units, expansion or stopping rule, and what qualifies as a successful low-cost run.
 
-For complex methods, include a numbered lifecycle, a compact formula or schema when the paper gives one, and a small running example or failure case when it clarifies a branch. Apply the formula-callout requirement whenever the equation carries part of the method: reproducing the equation without explaining its parameters and overall relationship is incomplete. Place benchmark-specific validation and evaluator details in this section or directly beside it, not only under results or limitations. Before handoff, check that a reader can answer: “what enters the method, what changes at each step, why it advances or stops, and what artifact is judged?”
+For complex methods, include a numbered lifecycle, a compact formula or schema when the paper gives one, and a small running example or failure case when it clarifies a branch. When a mechanism is hard to understand from a direct explanation alone, optionally place a compact `Q:` / `A:` pair immediately after the relevant core point. Treat Q&A as a local explanation attached to that point: never create a standalone Q&A heading or section, and never collect questions about unrelated points in one place. Use plain questions and direct answers without any role labels. Do not force Q&A into simple points or papers.
+
+Apply the formula-callout requirement whenever an equation carries part of the method: reproducing the equation without explaining its parameters and overall relationship is incomplete. Place benchmark-specific validation and evaluator details in this section or directly beside it, not only under experiments or limitations. Before handoff, check that a reader can answer: “what enters the method, what changes at each step, why it advances or stops, and what artifact is judged?”
 
 ### Key Figure Requirements
 
-Use `## 关键图示` / `## Key Figures` when the paper's public HTML exposes a figure that materially improves understanding. Insert the section after `核心方法` and before contributions. Each selected figure must use a direct, public `https://` image URL from the paper's official HTML or a clearly identified public HTML rendering mirror; never use `data:` URLs, local files, screenshots, logos, UI decoration, or unverified search thumbnails. Verify that the URL returns an image before writing it. Keep the original figure number or caption in a short sentence, then add one Chinese/working-language sentence explaining what to inspect. A paper may have no suitable figure; do not add a placeholder or force an image merely for visual variety.
+Use `## 关键图示` / `## Key Figures` when the paper's public HTML exposes a figure that materially improves understanding. Insert the section after `方法` / `Method` and before `实验：证据如何支撑结论` / `Experiments (How They Prove It)`. Each selected figure must use a direct, public `https://` image URL from the paper's official HTML or a clearly identified public HTML rendering mirror; never use `data:` URLs, local files, screenshots, logos, UI decoration, or unverified search thumbnails. Verify that the URL returns an image before writing it. Keep the original figure number or caption in a short sentence, then add one Chinese/working-language sentence explaining what to inspect. A paper may have no suitable figure; do not add a placeholder or force an image merely for visual variety.
 
 For manifest-driven generation, pass selected figures through the optional `figures` list. `ingest_papers.py` writes them into the canonical note, but does not choose their semantic relevance: inspect `paper.md` and its captions first. The usual target is one figure; use two or three only when they explain distinct necessary mechanisms.
 

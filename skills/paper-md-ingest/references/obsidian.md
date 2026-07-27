@@ -40,7 +40,7 @@ Embed only compact sections in project maps. The normal target is the summary bl
 Use a fixed `^summary` block id at the end of the last sentence in the summary section. The project map already includes the file path and paper title, so paper-specific block ids are unnecessary.
 
 ```markdown
-主要效果或发现是：... ^summary
+指出论文处理的领域痛点，以及为什么值得关注。 ^summary
 
 - [[papers/library/2507.02825/Best Practices for Agentic Benchmarks|Agentic Benchmark Checklist]] - Use this first to define evaluation rigor![[papers/library/2507.02825/Best Practices for Agentic Benchmarks#^summary]]
 ```
@@ -78,7 +78,7 @@ tags:
 
 `paper.md` keeps the full converted text and any usable public HTML figure links. The canonical reading note should promote only the one to three figures that make its explanation easier to follow; it is not a gallery or a second copy of the paper.
 
-Place selected figures after `## 核心方法` / `## Core Method` and before contributions:
+Place selected figures after `## 方法` / `## Method` and before `## 实验：证据如何支撑结论` / `## Experiments (How They Prove It)`:
 
 ```markdown
 ## 关键图示
