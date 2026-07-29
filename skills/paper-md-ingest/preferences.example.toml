@@ -1,0 +1,60 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Paper MD Ingest — User Preferences (EXAMPLE)
+#
+# Copy this file to preferences.toml and adjust the values to your setup:
+#
+#   cp preferences.example.toml preferences.toml
+#
+# The agent also performs this copy during first-time guided setup.
+# preferences.toml is gitignored — it stays local to your machine.
+#
+# Every key below has a built-in default (shown here as the value). You only
+# need to override the ones you want to change. Remove a section to use its
+# defaults, or remove the whole file to reset to factory defaults.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Set to true after completing first-time setup. When false or missing,
+# the agent guides you through the setup questions before running an ingest.
+initialized = true
+
+# ── PDF parser ────────────────────────────────────────────────────────────────
+[pdf_parser]
+# Which tool to use for converting PDF-only papers to markdown.
+#   "lit"         — LiteParse (recommended; supports figure extraction, OCR)
+#   "pdfplumber"  — text-only fallback via pdfplumber
+#   "pypdf"       — text-only fallback via pypdf
+tool = "lit"
+
+# ── Figure extraction ─────────────────────────────────────────────────────────
+[figures]
+# Whether to auto-extract figures from PDF-only papers via LiteParse.
+# When false, PDF conversion produces text-only paper.md with no figures.
+extract_from_pdf = true
+
+# Whether to upload extracted figures to cloud storage via PicGo CLI.
+# Requires: npm install -g picgo && picgo set (configure OSS/COS/SM.MS/etc.)
+# When false, figures are extracted but not uploaded (local paths are stripped).
+upload_via_picgo = false
+
+# Maximum number of figures to extract+upload per paper.
+# Candidates are ranked by pixel area; larger images are preferred.
+max_figures = 12
+
+# Minimum image dimensions (pixels) to qualify as a real figure.
+# Filters out math fragments, icons, logos, and tiny UI elements.
+min_width = 50
+min_height = 50
+
+# Maximum width:height ratio. Filters decorative strips and header/footer lines.
+max_aspect_ratio = 12.0
+
+# Minimum file size in KB. Filters tiny graphics that are almost always noise.
+min_file_size_kb = 3
+
+# ── OCR ───────────────────────────────────────────────────────────────────────
+[ocr]
+# Tesseract language code(s) for scanned or image-heavy PDFs.
+#   "eng"          — English only
+#   "chi_sim"      — Simplified Chinese only
+#   "eng+chi_sim"  — English + Simplified Chinese
+language = "eng"

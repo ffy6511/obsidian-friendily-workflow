@@ -19,6 +19,24 @@ try:
 except Exception:  # pragma: no cover
     lxml_html = None
 
+# Enable sibling-module import for the PDF figure extraction bridge and preferences.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+try:
+    from extract_pdf_figures import (
+        extract_pdf_figures as _run_figure_extraction,
+        lit_available as _lit_available,
+    )
+except Exception:  # pragma: no cover
+    _run_figure_extraction = None
+    _lit_available = lambda: False
+try:
+    from preferences import load_preferences as _load_prefs, is_initialized as _prefs_initialized
+except Exception:  # pragma: no cover
+    _load_prefs = None
+    _prefs_initialized = lambda path=None: False
+
 USER_AGENT = "paper-md-ingest/0.1"
 
 
@@ -249,9 +267,35 @@ def source_to_markdown(arxiv_id):
 
 def pdf_to_markdown(url):
     data, final_url, _ = request_bytes(url, timeout=60)
+
+    # Read parser preference (lit / pdfplumber / pypdf).
+    prefs = _load_prefs() if _load_prefs else {}
+    parser_tool = prefs.get("pdf_parser", {}).get("tool", "lit")
+    fig_prefs = prefs.get("figures", {})
+    extract_figs = fig_prefs.get("extract_from_pdf", True)
+
     with tempfile.TemporaryDirectory() as td:
         pdf = Path(td) / "paper.pdf"
         pdf.write_bytes(data)
+
+        # LiteParse path: structured Markdown + optional figure extraction.
+        if parser_tool == "lit" and _lit_available() and _run_figure_extraction:
+            try:
+                result = _run_figure_extraction(pdf)
+                print(
+                    f"info: LiteParse parsed PDF "
+                    f"({result['uploaded']} figures uploaded, "
+                    f"{result['skipped']} skipped, "
+                    f"picgo={'on' if result['picgo_used'] else 'off'})",
+                    file=sys.stderr,
+                )
+                return result["markdown"], final_url, result["figures"]
+            except RuntimeError as exc:
+                print(f"warning: LiteParse failed ({exc}); falling back to pdfplumber", file=sys.stderr)
+        elif parser_tool == "lit" and not _lit_available():
+            print("warning: preferences request 'lit' but it is not on PATH; using pdfplumber", file=sys.stderr)
+
+        # Fallback: pdfplumber or pypdf for text-only extraction (no figures).
         try:
             import pdfplumber
             parts = []
@@ -260,7 +304,7 @@ def pdf_to_markdown(url):
                     text = page.extract_text() or ""
                     if text.strip():
                         parts.append(f"\n\n## Page {i}\n\n{text.strip()}")
-            return "\n".join(parts).strip() + "\n", final_url
+            return "\n".join(parts).strip() + "\n", final_url, []
         except Exception:
             from pypdf import PdfReader
             reader = PdfReader(str(pdf))
@@ -269,7 +313,7 @@ def pdf_to_markdown(url):
                 text = page.extract_text() or ""
                 if text.strip():
                     parts.append(f"\n\n## Page {i}\n\n{text.strip()}")
-            return "\n".join(parts).strip() + "\n", final_url
+            return "\n".join(parts).strip() + "\n", final_url, []
 
 
 def yaml_scalar(value):
@@ -460,6 +504,7 @@ def reading_note_path(paper_dir, record):
 def ingest_one(record, library_root):
     record = dict(record)
     source = record.get("source", "")
+    pdf_figures = []
     arxiv_id = None
     if source.startswith("arxiv:"):
         arxiv_id = source.split(":", 1)[1].strip()
@@ -499,7 +544,11 @@ def ingest_one(record, library_root):
     else:
         record["id"] = record["id"].strip()
         final_source = source
-        md, final_source = pdf_to_markdown(source)
+        md, final_source, pdf_figures = pdf_to_markdown(source)
+
+    # Auto-extracted PDF figures fill in when the manifest provides none.
+    if pdf_figures and not record.get("figures"):
+        record["figures"] = pdf_figures
 
     paper_dir = library_root / record["id"]
     paper_dir.mkdir(parents=True, exist_ok=True)
@@ -516,6 +565,16 @@ def main():
     parser.add_argument("--papers-root", required=True, help="Path to papers workspace")
     parser.add_argument("--library-dir", default="library", help="Paper material subdirectory under --papers-root")
     args = parser.parse_args()
+
+    # Notify when preferences haven't been initialized yet.
+    if not _prefs_initialized():
+        print(
+            "notice: preferences.toml is not initialized — using built-in defaults.\n"
+            "       Run the skill workflow or edit preferences.toml to customize "
+            "parser, figure extraction, and PicGo settings.",
+            file=sys.stderr,
+        )
+
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     papers_root = Path(args.papers_root)
     library_root = papers_root / args.library_dir

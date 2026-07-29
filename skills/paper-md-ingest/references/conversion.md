@@ -13,6 +13,7 @@ Use this reference before converting HTML, debugging conversion quality, or prom
   - [Core `lit` Commands](#core-lit-commands)
   - [Route OCR with `is-complex`](#route-ocr-with-is-complex)
   - [Images and Structured PDF Data](#images-and-structured-pdf-data)
+  - [PDF Figure Extraction with PicGo](#pdf-figure-extraction-with-picgo)
   - [Remote PDFs](#remote-pdfs)
   - [Quality Gate](#quality-gate)
   - [Last-resort Fallback](#last-resort-fallback)
@@ -68,8 +69,8 @@ For non-arXiv or PDF-only material, use [LiteParse](https://github.com/run-llama
 - Prefer Markdown output for reading. Use JSON only for diagnostics or structured follow-up work.
 - Preserve headings, tables, lists, and links when the parser can reconstruct them.
 - Do not silently replace an existing `paper.md` with empty, truncated, or obviously garbled output. Parse into a temporary file, validate it, then replace the destination atomically.
-- Do not store the downloaded PDF, parser JSON, screenshots, or extracted images in the papers workspace unless the user explicitly requests those assets.
-- Keep PDF-derived figures out of the canonical reading note by default. The normal figure policy still requires a verified public `https://` image URL from official HTML or a clearly identified rendering mirror.
+- Do not store the downloaded PDF, parser JSON, screenshots, or extracted image files in the papers workspace unless the user explicitly requests those assets. The extraction pipeline uploads figures to cloud storage and discards local copies.
+- PDF-derived figures may enter the reading note when they are uploaded to a public HTTPS URL via PicGo (see [PDF Figure Extraction with PicGo](#pdf-figure-extraction-with-picgo)). Without PicGo, keep PDF-derived figures out — the reading note still requires a verified public `https://` image URL, and unresolved local paths are never acceptable.
 
 ### Check and Install LiteParse
 
@@ -222,20 +223,20 @@ Remove temporary diagnostics after the conversion. If `jq` is unavailable, parse
 
 ### Images and Structured PDF Data
 
-The default `placeholder` image mode changes Markdown presentation without writing image bytes. That would create unresolved local image links in this workspace, so use `--image-mode off` for canonical `paper.md`.
+For canonical `paper.md` without figures, use `--image-mode off`. This is the right choice when the paper has official HTML (figures come from there) or when `[figures].extract_from_pdf` is disabled in `preferences.toml`.
 
-Only when the user explicitly requests local PDF-derived images, extract them to an approved relative assets directory:
+LiteParse extracts embedded images with `--extract-images --image-output-dir`:
 
 ```bash
 lit parse document.pdf \
   --format markdown \
-  --image-mode embed \
+  --image-mode placeholder \
   --extract-images \
   --image-output-dir ./assets \
   -o paper.md
 ```
 
-`--extract-images` enables embedded-image extraction. `--image-output-dir` writes the image files and requires `--extract-images`. Confirm that every generated Markdown image reference resolves before retaining the assets.
+The Markdown gets `![](img_pN_K.png)` references (N = page, K = image index on that page). Image files land in `--image-output-dir`. Valid source JPEGs keep their format; all others are PNG.
 
 Use screenshots for temporary visual verification when text alone cannot validate formulas, tables, charts, or reading order:
 
@@ -244,6 +245,59 @@ lit screenshot document.pdf --target-pages "1,3,5" -o ./screenshots
 ```
 
 Keep screenshots outside the papers workspace unless the user explicitly requests them as durable assets.
+
+### PDF Figure Extraction with PicGo
+
+When a paper has no official HTML (PDF-only), figures cannot be linked as remote URLs from the publisher's page. The `scripts/extract_pdf_figures.py` bridge closes this gap: it extracts images via LiteParse, filters out decorations and icons, uploads qualifying figures to the user's configured cloud image bed via PicGo CLI, and rewrites the Markdown references with public HTTPS URLs.
+
+The pipeline runs automatically during `ingest_papers.py` for PDF-only papers when both `lit` and `picgo` are on `PATH` and `[figures].upload_via_picgo` is enabled in `preferences.toml`. When PicGo is absent or the preference is disabled, the pipeline skips upload gracefully and produces text-only `paper.md` (the previous default behavior).
+
+**Install PicGo CLI** (Node.js required):
+
+```bash
+npm install -g picgo
+```
+
+**Configure the image bed** before first use. PicGo supports Alibaba Cloud OSS, Tencent Cloud COS, Qiniu, SM.MS, GitHub, and others:
+
+```bash
+picgo set  # interactive: choose uploader, enter credentials
+picgo upload /path/to/test.png  # verify configuration returns an HTTPS URL
+```
+
+For OSS/COS, set the bucket, region, access key, secret key, and path prefix. After configuration, `picgo upload <file>` prints the uploaded URL to stdout.
+
+**Run the bridge standalone** (useful for testing or manual PDF conversion):
+
+```bash
+python3 "$PAPER_MD_INGEST_DIR/scripts/extract_pdf_figures.py" paper.pdf \
+  --output paper.md \
+  --max-figures 8 \
+  --json
+```
+
+The script:
+
+1. Routes OCR via `lit is-complex` (skips OCR for born-digital PDFs).
+2. Parses with `--extract-images --image-mode placeholder`.
+3. Filters extracted images by file size (≥ 3 KB), pixel dimensions (≥ 50×50), and aspect ratio (≤ 12:1) to remove icons, logos, decorative lines, and math fragments.
+4. Caps the figure count (default 12), preferring larger images by pixel area.
+5. Uploads each figure via `picgo upload` and collects HTTPS URLs.
+6. Rewrites Markdown: uploaded figures get cloud URLs; filtered or failed images have their `![](...)` references stripped to avoid broken paths.
+7. Returns a JSON summary to stderr: `{uploaded, skipped, picgo_used, figures}`.
+
+**Figure filtering heuristics** — LiteParse extracts *all* embedded images, including noise. The defaults (from `preferences.toml` `[figures]`) are conservative but may need tuning for specific papers:
+
+| Filter | Default | Preference key | Rationale |
+|--------|---------|----------------|-----------|
+| Min file size | 3 KB | `min_file_size_kb` | Icons and tiny graphics are typically < 1 KB |
+| Min dimensions | 50×50 px | `min_width` / `min_height` | Filters math symbol fragments and tiny UI elements |
+| Max aspect ratio | 12:1 | `max_aspect_ratio` | Removes header/footer strips and decorative lines |
+| Max figures | 12 | `max_figures` | Caps cloud upload volume; prefer largest by area |
+
+Override via CLI flags (`--min-width`, `--min-height`, `--max-figures`) or by editing `preferences.toml` directly.
+
+**Reading note integration** — `ingest_papers.py` auto-populates the `## 关键图示` section when the manifest provides no `figures` list, `[figures].extract_from_pdf` is enabled in `preferences.toml`, and PDF figures were successfully uploaded. Each auto-extracted figure gets a generic `图 N` alt label; add a caption and reading cue manually after reviewing `paper.md` and the PDF.
 
 ### Remote PDFs
 

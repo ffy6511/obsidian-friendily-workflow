@@ -11,16 +11,50 @@ Add research papers to an Obsidian-friendly `papers/` workspace as Markdown that
 
 This skill assumes Obsidian by default. Use wikilinks, aliases, embeds, backlinks, and lightweight frontmatter as first-class parts of the literature workflow.
 
+## User Preferences (`preferences.toml`)
+
+Two files work together to keep the skill portable across users:
+
+| File | Role | Git-tracked |
+|------|------|-------------|
+| `preferences.example.toml` | Fully documented template — every option with its default value and inline comments. | Yes |
+| `preferences.toml` | Real user config — created by copying the example. | No (gitignored) |
+
+When `preferences.toml` does not exist (or `initialized` is `false`), all scripts fall back to built-in defaults. The agent detects this and guides the user through first-time setup.
+
+### First-time setup (agent-guided)
+
+When `preferences.toml` is missing or `initialized` is `false`, the agent must guide the user through a one-time setup **before** running any ingest:
+
+1. Copy the example file: `cp preferences.example.toml preferences.toml`.
+2. Ask concise questions and fill in the answers.
+3. Set `initialized = true` and save.
+
+Questions to ask:
+
+1. **PDF parser**: LiteParse (`lit`, recommended, supports figure extraction) or a text-only fallback (`pdfplumber` / `pypdf`)?
+2. **Figure extraction from PDF**: Should the pipeline auto-extract figures from PDF-only papers? (default: yes)
+3. **PicGo cloud upload**: Should extracted figures be uploaded to cloud storage via PicGo CLI? If yes, confirm `picgo` is installed (`npm install -g picgo`) and configured (`picgo set`) with an image bed such as OSS, COS, SM.MS, or GitHub.
+4. **OCR language**: Default Tesseract language for scanned PDFs — `eng` (English), `chi_sim` (Simplified Chinese), or `eng+chi_sim` (both)?
+
+After setup, read preferences silently and never re-ask. Users can also edit `preferences.toml` directly at any time; the agent re-reads without asking. See `preferences.example.toml` for the full schema with inline comments.
+
+### How scripts use preferences
+
+- `ingest_papers.py` reads `[pdf_parser].tool` to choose the parser and `[figures]` settings for figure extraction. It prints a notice to stderr when preferences are not yet initialized.
+- `extract_pdf_figures.py` reads `[figures]` thresholds (min dimensions, max count, aspect ratio) and `[figures].upload_via_picgo` to gate cloud upload.
+- CLI flags always override preferences — e.g., `--no-picgo` forces text-only even when `upload_via_picgo = true`.
+
 ## Workflow
 
-1. Inspect the target `papers/` workspace before ingesting. If it is missing or immature, read `references/workspace.md` and initialize missing basics such as `AGENTS.md`, `PAPERS.md`, `library/`, `projects/`, `topics/`, and an optional project map or topic index.
+1. **Check `preferences.toml`** next to `SKILL.md`. If it does not exist or `initialized` is `false`, guide the user through the one-time setup described in [User Preferences](#user-preferences-preferencestoml) — copy `preferences.example.toml` to `preferences.toml`, fill in answers, set `initialized = true`. If already initialized, use the stored preferences silently. Then inspect the target `papers/` workspace before ingesting. If it is missing or immature, read `references/workspace.md` and initialize missing basics such as `AGENTS.md`, `PAPERS.md`, `library/`, `projects/`, `topics/`, and an optional project map or topic index.
 2. If the user gives paper ids, titles, or official URLs, resolve each paper directly.
 3. If the user only gives a topic, project goal, or research direction, first ask concise follow-up questions until the scope is clear enough to search. If the user already provided a concrete goal, infer reasonable search axes and proceed.
 4. For topic-based discovery, search arXiv first. Unless the user specifies a count, curate 5-10 papers. Prefer a balanced set that covers core benchmarks, infrastructure/framework papers, methodology/survey papers, and project-specific risks.
 5. Convert the selected papers into a manifest with concise summaries in the user's working language before ingesting. Add project relevance only when the user explicitly supplies a project or the paper's project ownership is already clear from the request.
 6. Prefer official arXiv HTML. Convert it to `paper.md` and retain figure images as remote Markdown links. If a legacy paper has no official HTML, a public HTML rendering mirror may supply figures, but the canonical note source remains the official arXiv/PDF URL.
 7. If HTML is unavailable, use arXiv source and convert the TeX tree to `paper.md`.
-8. If source is unavailable, read `references/conversion.md`, check or install the pinned `lit` CLI, route OCR with `lit is-complex`, and convert the official PDF into a validated temporary Markdown file before replacing `paper.md`.
+8. If source is unavailable, read `references/conversion.md`, check or install the pinned `lit` CLI (unless `[pdf_parser].tool` in `preferences.toml` specifies a different parser), route OCR with `lit is-complex`, and convert the official PDF into a validated temporary Markdown file before replacing `paper.md`. When `[figures].extract_from_pdf` and `[figures].upload_via_picgo` are enabled in `preferences.toml`, the extraction pipeline (`scripts/extract_pdf_figures.py`) automatically extracts figures from the PDF, uploads them to cloud storage, and rewrites the Markdown with public HTTPS URLs. See [PDF Figure Extraction with PicGo](references/conversion.md#pdf-figure-extraction-with-picgo) in the conversion reference.
 9. Create or update one reading-note `.md` file under `library/<paper-id>/` in the user's working language as the canonical Obsidian note for the paper. `NOTES.md` is the default; a short title filename is allowed when it improves human navigation. When `paper.md` exposes usable HTML figures, select the one to three that explain the paper's mechanism, protocol, or main result and add them to the note with a concise reading cue; omit decorative or redundant figures.
 10. Add a `source` field in the reading note frontmatter pointing to the best human-readable official source, usually arXiv HTML or official PDF.
 11. Update `PAPERS.md` manually after batch generation.
@@ -242,9 +276,9 @@ Apply the formula-callout requirement whenever an equation carries part of the m
 
 ### Key Figure Requirements
 
-Use `## 关键图示` / `## Key Figures` when the paper's public HTML exposes a figure that materially improves understanding. Insert the section after `方法` / `Method` and before `实验：证据如何支撑结论` / `Experiments (How They Prove It)`. Each selected figure must use a direct, public `https://` image URL from the paper's official HTML or a clearly identified public HTML rendering mirror; never use `data:` URLs, local files, screenshots, logos, UI decoration, or unverified search thumbnails. Verify that the URL returns an image before writing it. Keep the original figure number or caption in a short sentence, then add one Chinese/working-language sentence explaining what to inspect. A paper may have no suitable figure; do not add a placeholder or force an image merely for visual variety.
+Use `## 关键图示` / `## Key Figures` when the paper exposes a figure that materially improves understanding — whether from public HTML or auto-extracted from a PDF-only paper and uploaded via PicGo. Insert the section after `方法` / `Method` and before `实验：证据如何支撑结论` / `Experiments (How They Prove It)`. Each selected figure must use a direct, public `https://` image URL from the paper's official HTML, a clearly identified public HTML rendering mirror, or a PicGo-uploaded cloud URL for PDF-only papers; never use `data:` URLs, local files, screenshots, logos, UI decoration, or unverified search thumbnails. Verify that the URL returns an image before writing it. Keep the original figure number or caption in a short sentence, then add one Chinese/working-language sentence explaining what to inspect. A paper may have no suitable figure; do not add a placeholder or force an image merely for visual variety.
 
-For manifest-driven generation, pass selected figures through the optional `figures` list. `ingest_papers.py` writes them into the canonical note, but does not choose their semantic relevance: inspect `paper.md` and its captions first. The usual target is one figure; use two or three only when they explain distinct necessary mechanisms.
+For manifest-driven generation, pass selected figures through the optional `figures` list. `ingest_papers.py` writes them into the canonical note, but does not choose their semantic relevance: inspect `paper.md` and its captions first. The usual target is one figure; use two or three only when they explain distinct necessary mechanisms. For PDF-only papers without manifest figures, the ingest script auto-extracts and uploads figures via PicGo when `[figures].upload_via_picgo` is enabled in `preferences.toml`; review and caption them manually after the run.
 
 ## Project Map Requirements
 
