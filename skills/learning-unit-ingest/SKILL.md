@@ -14,7 +14,7 @@ Build a personal domain-learning workspace. Public URLs are the source material.
 1. Identify the learning domain from the user's request, such as `agentic-rl`, `llm-evaluation`, or `deep-learning`.
 2. If the user asks to learn a domain, discover public materials first. Search for a balanced set of high-quality HTML docs, official guides, high-signal blogs, YouTube videos, and Bilibili videos. Prefer official project documentation, canonical tutorials, technical blogs with concrete workflows, and talks that explain mechanisms.
 3. Present a candidate learning outline before creating unit notes. Include resource title, type, URL, why it belongs in the domain, and the proposed unit it supports. A proposed unit may aggregate multiple complementary resources. Wait for user confirmation before building the learning workspace from discovered materials.
-4. If the user already confirms the outline or provides exact URLs to ingest, inspect `learning/`. If it is missing or immature, read `references/workspace.md` and initialize it with `scripts/init_learning_workspace.py`.
+4. If the user already confirms the outline or provides exact URLs to ingest, inspect `learning/`. If it is missing or immature, read the `obsidian-vault` skill's [Workspace Bootstrap](../obsidian-vault/references/workspace-bootstrap.md) reference and initialize it with `scripts/init_learning_workspace.py`.
 5. Create or update one small unit note per learning unit under `learning/domains/<domain>/units/`. A unit may contain one iframe or several iframes. Put `学习资源` at the top, list each resource as `- <resource name>: <URL>`, place its iframe directly below the list item, then add `学习导引`, `知识总览`, optional `概念注释`, and a complete `我的笔记`.
 6. Update `learning/LEARNING.md` and the domain map `learning/domains/<domain>/<domain-title>.md`. The domain map is the human and agent entry point for the domain.
 7. Create or update the domain roadmap canvas at `learning/domains/<domain>/<Domain Title> roadmap.canvas`, then embed it near the top of the domain map with `![[learning/domains/<domain>/<Domain Title> roadmap.canvas]]`.
@@ -39,7 +39,12 @@ learning/
 
 The local workspace stores maps and notes. Public webpages and videos stay referenced by URL and rendered through iframe embeds.
 
-Read `references/workspace.md` before initializing or changing workspace shape. Read `references/obsidian.md` before creating unit notes, video embeds, or domain maps.
+## Dependencies
+
+This skill relies on two shared skills for Obsidian conventions:
+
+- **`obsidian-markdown`** — for Obsidian syntax (wikilinks, embeds, callouts, footnotes, Mermaid diagrams). Follow its rules for formula explanations, terminology footnotes, and diagram conventions.
+- **`obsidian-vault`** — for vault workspace architecture (directory shape, `AGENTS.md` seed, navigation-map patterns, roadmap canvas conventions, workspace validation). Read its [Workspace Bootstrap](../obsidian-vault/references/workspace-bootstrap.md) before initializing `learning/`, its [Navigation Maps](../obsidian-vault/references/navigation-maps.md) before creating domain maps, and its [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md) before creating `.canvas` files.
 
 ## Unit Notes
 
@@ -98,7 +103,7 @@ Use the fixed block id `^guide`; do not invent per-unit guide ids.
 
 ## Domain Roadmap Canvas
 
-Each learning domain should have a paired roadmap canvas named `learning/domains/<domain>/<Domain Title> roadmap.canvas`. Embed it near the top of the domain map, immediately after `学习目标` unless the note already has a more natural overview section:
+Each learning domain should have a paired roadmap canvas named `learning/domains/<domain>/<Domain Title> roadmap.canvas`. Embed it near the top of the domain map, immediately after `学习目标`:
 
 ```markdown
 ## Roadmap
@@ -106,16 +111,7 @@ Each learning domain should have a paired roadmap canvas named `learning/domains
 ![[learning/domains/<domain>/<Domain Title> roadmap.canvas]]
 ```
 
-Use a roadmap.sh-inspired layout for domain roadmaps:
-
-- Put the main learning path on a vertical center spine. Main path nodes should use orange, preferably `#f6a800`, and be wide enough for the full unit title or key phrase without clipping. Use at least 230-280px width for short labels and increase width for Chinese or mixed Chinese/English labels.
-- Put supporting concepts, prerequisites, and subtopics as side branches. Branch nodes should use blue, preferably light blue `#b9dcff`, with blue branch lines such as `#2f7de1`. Use more branches when the topic is complex; avoid cramming too much text into one node.
-- Add a third-level explanation node for every second-level concept node. The explanation node should give a one-sentence meaning or role of that concept. Use a pale blue fill such as `#eaf4ff`.
-- Connect each second-level concept node to its third-level explanation node with a gray line such as `#9ca3af`, set `toEnd: "none"`, and align the two node centers vertically so the edge is horizontal and does not cross other edges.
-- Use concise labels in branch nodes. Put explanation prose in the third-level node rather than shrinking the concept label.
-- Keep top context blocks such as prerequisites and usage notes in neutral white nodes.
-- Use vault-relative wikilinks in main nodes, such as `[[learning/domains/<domain>/units/<unit-title>|<unit-title>]]`. Do not use absolute paths.
-- Prefer stable dimensions and aligned coordinates. Leave enough spacing for Obsidian's rendered text so nodes do not overlap or truncate. If text does not fit, widen the node first; do not reduce the label until the roadmap becomes visually noisy.
+Follow the canvas layout conventions in the `obsidian-vault` skill's [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md) reference — colors, three-level node hierarchy, edge rules, and node sizing all live there as the single source of truth.
 
 ## Resource Embeds
 
@@ -178,4 +174,4 @@ Validate after every build, rename, map edit, or manifest edit:
 python3 .agents/skills/learning-unit-ingest/scripts/validate_learning_workspace.py --learning-root learning
 ```
 
-For roadmap canvas edits, also validate JSON parseability and edge integrity. At minimum, parse the `.canvas` file and check that every `fromNode` and `toNode` exists in `nodes`. When the canvas has third-level explanation nodes, verify their explanation edges are gray, use `toEnd: "none"`, and have matching vertical centers with their second-level concept nodes.
+For roadmap canvas edits, follow the canvas JSON validation rules in the `obsidian-vault` skill's [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md) reference.

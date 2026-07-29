@@ -47,7 +47,7 @@ After setup, read preferences silently and never re-ask. Users can also edit `pr
 
 ## Workflow
 
-1. **Check `preferences.toml`** next to `SKILL.md`. If it does not exist or `initialized` is `false`, guide the user through the one-time setup described in [User Preferences](#user-preferences-preferencestoml) — copy `preferences.example.toml` to `preferences.toml`, fill in answers, set `initialized = true`. If already initialized, use the stored preferences silently. Then inspect the target `papers/` workspace before ingesting. If it is missing or immature, read `references/workspace.md` and initialize missing basics such as `AGENTS.md`, `PAPERS.md`, `library/`, `projects/`, `topics/`, and an optional project map or topic index.
+1. **Check `preferences.toml`** next to `SKILL.md`. If it does not exist or `initialized` is `false`, guide the user through the one-time setup described in [User Preferences](#user-preferences-preferencestoml) — copy `preferences.example.toml` to `preferences.toml`, fill in answers, set `initialized = true`. If already initialized, use the stored preferences silently. Then inspect the target `papers/` workspace before ingesting. If it is missing or immature, read the `obsidian-vault` skill's [Workspace Bootstrap](../obsidian-vault/references/workspace-bootstrap.md) reference and initialize missing basics such as `AGENTS.md`, `PAPERS.md`, `library/`, `projects/`, `topics/`, and an optional project map or topic index.
 2. If the user gives paper ids, titles, or official URLs, resolve each paper directly.
 3. If the user only gives a topic, project goal, or research direction, first ask concise follow-up questions until the scope is clear enough to search. If the user already provided a concrete goal, infer reasonable search axes and proceed.
 4. For topic-based discovery, search arXiv first. Unless the user specifies a count, curate 5-10 papers. Prefer a balanced set that covers core benchmarks, infrastructure/framework papers, methodology/survey papers, and project-specific risks.
@@ -81,33 +81,20 @@ papers/
 
 Use bare arXiv ids without version suffix for directory names, such as `library/2509.16779`. Use a stable slug for non-arXiv papers, such as `library/webaccessbench`. The default note filename is `NOTES.md`; a concise paper-title filename is also acceptable when it improves browsing. Whenever the note filename changes, update every project map and `PAPERS.md`, then run the validator.
 
-For new or partially formed workspaces, use `references/workspace.md` as the initialization reference before ingesting papers.
+For new or partially formed workspaces, use the `obsidian-vault` skill's [Workspace Bootstrap](../obsidian-vault/references/workspace-bootstrap.md) reference before ingesting papers.
 
-## Obsidian Literature Workflow
+## Dependencies
 
-Before creating or updating project maps, topic indexes, reading-note figures, or when unsure about wikilinks, embeds, aliases, heading links, frontmatter, or backlinks, read `references/obsidian.md`. Before converting HTML, TeX, or PDF, debugging conversion quality, or choosing figures, read `references/conversion.md`.
+This skill relies on two shared skills for Obsidian conventions:
+
+- **`obsidian-markdown`** — for Obsidian syntax (wikilinks, embeds, callouts, footnotes, Mermaid diagrams, properties). Follow its rules for callout expand/collapse, formula explanations, terminology footnotes, and diagram conventions. Do not re-state those rules here.
+- **`obsidian-vault`** — for vault workspace architecture (directory shape, `AGENTS.md` seed, project-map and topic-index navigation patterns, roadmap canvas conventions, workspace validation). Read its [Navigation Maps](../obsidian-vault/references/navigation-maps.md) reference before creating project maps or topic indexes. Read its [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md) reference before creating `.canvas` files.
 
 Treat the non-`paper.md` reading note under `library/<paper-id>/` as the canonical Obsidian note for a paper. Treat `projects/<project>.md` as the human and agent reading entry for a project; treat `topics/<topic>.md` as a cross-project navigation index, not a second paper store or a project map.
 
 ### Project association gate
 
 `## 与当前项目的关系` / `## Relationship to Current Project`, the manifest `relevance` field, and a project-map update are all optional. Add them only when the request names a project, or when an existing project map is the paper's clearly established owner. Do not infer a project from the paper's topic, tags, or a `knowledge-radar-actions` receipt. When the condition is absent, omit the section entirely; backlinks and a topic index already provide discovery without inventing a project relationship.
-
-Use Obsidian Flavored Markdown in project maps:
-
-```markdown
-- [[papers/library/<paper-id>/<reading-note>|<short human title>]] - <one-line reason>![[papers/library/<paper-id>/<reading-note>#^summary]]
-```
-
-Use wikilink aliases for readable titles. Use inline block embeds for concise paper summaries directly on the same bullet as the paper link. In `主题聚合`, every paper bullet must include `![[...#^summary]]`; summary embeds are not optional there. Rely on backlinks so a paper note can reveal which projects, research questions, or decisions cite it. Prefer the stable summary block id `^summary` instead of embedding the whole summary heading section; the file path already identifies the paper, so paper-specific block ids are unnecessary. Do not copy `paper.md` or duplicate long single-paper analysis into project maps.
-
-### Mermaid 流程图
-
-当论文机制、实验协议或智能体生命周期需要流程图时，优先使用 `stateDiagram-v2` 描述多数以状态和事件迁移为主的场景，例如任务生命周期、执行状态、重试、通知与会话恢复。只有图的重点是静态拓扑、并行分叉或组件连接，而不是状态变化时，才使用 `flowchart`。
-
-除 Mermaid 语法关键字及必须保留的代码、协议或专有标识外，图中的状态名称、迁移说明和注释必须使用用户的工作语言；中文笔记默认全部使用中文。
-
-对于每个 `stateDiagram-v2`，只统计具名业务状态，不计 Mermaid 的 `[*]` 入口和出口标记。业务状态为四个及以下时使用 `direction LR`；五个及以上时使用 `direction TB`。若图仍然过密，应拆为总览图与聚焦子图，不要强行塞进单张图。
 
 ## Script
 
@@ -282,61 +269,30 @@ For manifest-driven generation, pass selected figures through the optional `figu
 
 ## Project Map Requirements
 
-When a batch is tied to a project, create or update `projects/<project>.md`. Project maps are the primary human/agent reading entry for project-specific literature. They should explain why the papers matter to the project, not duplicate single-paper notes.
+When a batch is tied to a project, create or update `projects/<project>.md`. Project maps are the primary human/agent reading entry for project-specific literature. Follow the navigation-map conventions in the `obsidian-vault` skill's [Navigation Maps](../obsidian-vault/references/navigation-maps.md) reference for wikilink + embed + backlink patterns.
 
-Use Obsidian double links to the canonical notes:
-
-```markdown
-- [[papers/library/<paper-id>/<reading-note>|<short human title>]] - <one-line reason>![[papers/library/<paper-id>/<reading-note>#^summary]]
-```
-
-Use the fixed `^summary` block id from the reading note. Keep the paper title, one-line reason, and embedded summary on the same bullet. See `references/obsidian.md` for Obsidian wikilink and embed syntax.
-
-Required content:
+Paper-specific project-map content:
 
 - A project title and short project goal.
-- A paired roadmap canvas embedded near the top of the project map.
+- A paired roadmap canvas embedded near the top (see `obsidian-vault` [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md)).
 - A `主题聚合` section with project-specific groupings by problem, module, decision, or reading stage; every paper listed there must include an inline `![[...#^summary]]` block embed on the same bullet.
-- A `推荐阅读路径` section after `主题聚合`, with ordered double links and one-line reasons.
-- Obsidian double links to every referenced paper note.
+- A `推荐阅读路径` section after `主题聚合`, with ordered wikilinks and one-line reasons.
+- Wikilinks to every referenced paper note using the `^summary` block id.
 
-Strongly recommended content:
+Strongly recommended:
 
 - Lightweight frontmatter with `type: note`, `status`, `visibility`, and `literature-map` tags.
 - A search framing section when papers were discovered from a topic or project goal.
-- A `阅读关注点` section only when useful, for what to inspect during close reading, open questions, or follow-up paper gaps. Do not add a generic `设计笔记` section by default.
+- A `阅读关注点` section only when useful, for close-reading cues, open questions, or follow-up paper gaps. Do not add a generic `设计笔记` section by default.
 
-Do not duplicate `paper.md` or reading notes in project folders. Keep long single-paper analysis in `library/<paper-id>/<reading-note>.md`; keep project maps focused on navigation, synthesis, and project relevance.
+Do not duplicate `paper.md` or reading notes in project folders.
 
 ## Topic Index Requirements
 
-Use `papers/topics/<topic>.md` when the requested grouping is long-lived and independent of a specific project, such as classics, a method family, or a benchmark category. Do not create a project map merely to hold that grouping.
+Use `papers/topics/<topic>.md` when the requested grouping is long-lived and independent of a specific project, such as classics, a method family, or a benchmark category. Follow the topic-index pattern in the `obsidian-vault` skill's [Navigation Maps](../obsidian-vault/references/navigation-maps.md) reference. Paper-specific requirements:
 
-- Add lightweight frontmatter with `type: topic-index`, `status`, `visibility`, and topic tags.
 - Link only to canonical reading notes in `library/`; use `![[...#^summary]]` for compact recall when helpful.
-- Organize entries by conceptual dependency or reading order, and state why they belong in the same index.
 - Do not create a roadmap canvas, duplicate paper note, or topic-specific raw-material directory.
-
-## Project Roadmap Canvas
-
-Each project map should have a paired roadmap canvas named `papers/projects/<project> roadmap.canvas`. Embed it near the top of the project map, usually after the project goal and before search framing:
-
-```markdown
-## Roadmap
-
-![[papers/projects/<project> roadmap.canvas]]
-```
-
-Use a roadmap.sh-inspired layout for project roadmaps:
-
-- Put project themes on the vertical center spine. These orange nodes should mirror the `主题聚合` subsections, such as problem areas, platform modules, design decisions, or reading stages. Do not make individual papers the main spine unless the project has only one linear reading list and no meaningful themes.
-- Put concrete papers as blue branch nodes under the theme they support. Each paper node should use a vault-relative wikilink to the canonical reading note, with a short alias.
-- Add a third-level explanation node for every paper node. The explanation node should state the paper's project role in one sentence, usually reusing the one-line reason from `主题聚合`.
-- Use orange main nodes, preferably `#f6a800`; blue branch nodes, preferably `#b9dcff`; and blue branch lines such as `#2f7de1`. Keep top context blocks such as project goal or usage notes in neutral white nodes.
-- Use pale blue `#eaf4ff` for third-level explanation nodes. Connect each paper node to its explanation node with a gray line such as `#9ca3af`, set `toEnd: "none"`, and align the two node centers vertically so the edge is horizontal and does not cross other edges.
-- Preserve the project-map meaning: theme nodes answer "what design question or module is this cluster about?", and paper branches answer "which paper supplies evidence, patterns, or risks for this theme?"
-- Make node widths large enough for the displayed title. Use at least 260-320px for theme nodes and widen paper nodes for Chinese or mixed Chinese/English aliases. If text does not fit, widen the node or split a long branch into multiple concise paper nodes.
-- Keep all paths vault-relative. Do not use absolute paths inside `.canvas` or project maps.
 
 ## PAPERS.md Requirements
 
@@ -366,4 +322,4 @@ ROOT="papers"
 
 The validator must pass before handing off. It checks library structure, reading-note frontmatter, `PAPERS.md` inventory coverage, Markdown links, Obsidian wikilinks/embeds, and embedded heading targets. `--check-remote-images` additionally fetches selected figures and requires `image/*`; use it whenever figures change.
 
-For roadmap canvas edits, also validate JSON parseability and edge integrity. At minimum, parse the `.canvas` file and check that every `fromNode` and `toNode` exists in `nodes`. When the canvas has third-level explanation nodes, verify their explanation edges are gray, use `toEnd: "none"`, and have matching vertical centers with their second-level paper nodes.
+For roadmap canvas edits, follow the canvas JSON validation rules in the `obsidian-vault` skill's [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md) reference: parse the `.canvas` file, check that every `fromNode` and `toNode` exists, and verify explanation-edge colors and alignment.
