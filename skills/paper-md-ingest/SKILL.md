@@ -175,7 +175,7 @@ Use a compact Markdown table whenever the content compares three or more paralle
 Keep prose before or after the table only for the causal conclusion, caveat, or reading guidance that the cells do not express. Do not restate every row in prose. Keep numbered lists for genuine execution sequences where order and dependency matter more than side-by-side comparison, and keep prose for a single causal chain without stable repeated fields.
 
 ```markdown
-## 30 秒高层摘要
+## 高层摘要
 
 用 1-2 句直白语言说明核心贡献，让没有读过论文的人也能理解。
 指出它处理的领域痛点，以及为什么值得关注。 ^summary
@@ -221,7 +221,7 @@ Follow the terminology footnote rules in the `obsidian-markdown` skill. Use a `#
 
 ### Formula and Complex-Concept Callouts
 
-Follow the formula callout rules in the `obsidian-markdown` skill. Use `> [!NOTE]- 公式解释` for collapsed explanations after equations in `方法`, `实验：证据如何支撑结论`, and any user-requested additions. Explain the equation's physical meaning before presenting the formula. The formula callout requirement applies throughout the reading note whenever an equation carries part of the method.
+Follow the formula callout rules in the `obsidian-markdown` skill. After equations in `方法`, `实验：证据如何支撑结论`, and any user-requested additions, choose the callout's default state by **relevance and length**: expand (`> [!NOTE]+ 公式解释`) when the unpacking is essential to the surrounding passage and is not long; collapse (`> [!NOTE]- 公式解释`) when it is long or supplementary. Do not collapse every formula callout by default. Explain the equation's physical meaning before presenting the formula. The formula callout requirement applies throughout the reading note whenever an equation carries part of the method.
 
 ### Method: blocking completeness requirement
 

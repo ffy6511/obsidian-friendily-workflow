@@ -278,7 +278,7 @@ def yaml_scalar(value):
 
 NOTE_LABELS = {
     "zh": {
-        "high_level_summary": "30 秒高层摘要",
+        "high_level_summary": "高层摘要",
         "summary_fallback": [
             "核心贡献尚未从论文正文核验。",
             "需要进一步阅读论文以确认它处理的领域痛点。",

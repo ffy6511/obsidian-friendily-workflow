@@ -83,13 +83,24 @@ Common types: `note`, `tip`, `warning`, `info`, `example`, `quote`, `bug`, `dang
 
 See [CALLOUTS.md](references/CALLOUTS.md) for the full list with aliases, nesting, and custom CSS callouts.
 
+### When to Expand or Collapse a Foldable Callout
+
+Decide a callout's default state from the **content's relevance and length**, not from a fixed rule tied to the callout's topic. This applies to every foldable callout in the note, not only formula explanations.
+
+- **Expand by default** (`> [!NOTE]+ ...`) when the callout carries content the reader *needs* to follow the surrounding passage and the body is not very long. A short, essential explanation should stay open so the reader can keep reading without clicking.
+- **Collapse by default** (`> [!NOTE]- ...`) when the body is long enough to disrupt the main flow, or when the callout is optional supplementary detail the reader can skip without losing the argument.
+- Use a plain, non-foldable callout (`> [!NOTE] ...`) only for a short highlight that belongs in the main reading flow and never needs to be hidden.
+
+In short: **essential + short → expanded; long or optional → collapsed.** Whatever the choice, keep the surrounding narrative standing on its own when a callout is collapsed: state the key purpose in the main text, and reserve the callout for the detailed unpacking.
+
 ### Formula and Complex-Concept Callouts
 
-Use an Obsidian-native `NOTE` callout immediately after a formula, special method, or complex concept when the explanation cannot fit in a one- or two-sentence footnote.
+Use an Obsidian-native `NOTE` callout immediately after a formula, special method, or complex concept when the explanation cannot fit in a one- or two-sentence footnote. Choose its default state by the expand/collapse principle above — do **not** collapse every formula callout by default:
 
-- Use `> [!NOTE] 公式解释` for a short explanation that should remain visible.
-- Use `> [!NOTE]+ 公式解释` only when the block should be collapsible but initially expanded.
-- Use `> [!NOTE]- 公式解释` for a content-heavy explanation that should be collapsed by default. Use equally literal titles such as `方法展开` or `概念展开` when the content is not an equation.
+- Expand by default (`> [!NOTE]+ 公式解释`) when the unpacking is essential to the surrounding paragraph and is not long.
+- Collapse by default (`> [!NOTE]- 公式解释`) when the explanation is content-heavy or supplementary, so the reader can skip the detail.
+- Use a plain `> [!NOTE] 公式解释` only for a very short clarification that should never be hidden.
+- Use equally literal titles such as `方法展开` or `概念展开` when the content is not an equation.
 - Keep the surrounding paragraph understandable while the callout is collapsed: state the formula or method's basic purpose in the main narrative, then put the detailed unpacking in the callout.
 - Explain a formula in plain language before enumerating symbols. Define every non-obvious parameter, variable, index, operator, normalization term, and constraint; state where each value comes from and whether it is fixed, observed, or learned when that distinction matters.
 - Explain the overall relationship, not only the symbol table: identify the optimized or computed quantity, how the terms interact, which quantities increase or decrease together, and the trade-off, normalization, constraint, or stopping condition expressed by the equation.

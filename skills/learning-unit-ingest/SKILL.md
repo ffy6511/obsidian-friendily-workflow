@@ -76,7 +76,7 @@ Follow the terminology footnote rules in the `obsidian-markdown` skill. Collect 
 
 ### Formula and Complex-Concept Callouts
 
-Follow the formula callout rules in the `obsidian-markdown` skill. Use `> [!NOTE]- 公式解释` for collapsed explanations after equations or complex mechanisms in `知识总览` or `我的笔记`.
+Follow the formula callout rules in the `obsidian-markdown` skill. After equations or complex mechanisms in `知识总览` or `我的笔记`, choose the callout's default state by **relevance and length**: expand (`> [!NOTE]+ 公式解释`) when the unpacking is essential to the surrounding passage and is not long; collapse (`> [!NOTE]- 公式解释`) when it is long or supplementary. Do not collapse every formula callout by default.
 
 ## Domain Maps
 
