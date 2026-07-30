@@ -149,7 +149,7 @@ Manifest schema:
     ],
     "notes": {
       "problem_definition": "具体问题、重要性，以及既有方案的根本瓶颈。",
-      "method": "逐模块解释方法；困难部分可在对应核心要点后加入简洁的 Q:/A: 和具体例子。",
+      "method": "逐模块解释方法；困难部分可在对应核心要点后用 QUESTION 类型 callout 补充简洁问答和具体例子。",
       "experiments": "实验支持哪些主张、关键图表如何阅读，以及证据是否充分。",
       "limitations_open_questions": "真实局限、部署风险和自然延伸出的开放问题。"
     },
@@ -209,11 +209,10 @@ Keep prose before or after the table only for the causal conclusion, caveat, or 
 
 先给出端到端总览，再按论文的实际模块逐一解释输入、处理、输出和控制信号。公式先解释物理意义，再给公式和符号。
 
-当某个核心要点仅靠直接说明仍然难以理解时，可紧跟该要点补充简洁的 Q&A。Q&A 是局部可选解释，不得单独设章，也不得集中收纳与不同要点相关的问题：
+当某个核心要点仅靠直接说明仍然难以理解时，可紧跟该要点补充简洁的 Q&A。Q&A 用 Obsidian 的 QUESTION 类型 callout 呈现：问题作为 callout 标题，答案作为正文。Q&A 是局部可选解释，不得单独设章，也不得集中收纳与不同要点相关的问题：
 
-**Q:** 这个步骤为什么需要？
-
-**A:** 先说明直觉，再用一个具体例子走完该步骤。
+> [!QUESTION]- 这个步骤为什么需要？
+> 先说明直觉，再用一个具体例子走完该步骤。
 
 ## 实验：证据如何支撑结论
 
@@ -257,7 +256,7 @@ Cover the applicable items below. Omit only items the paper truly does not defin
 - **Benchmark / dataset**: task contract, instance schema, source data, construction pipeline, splits, human or automatic validation, evaluator, metrics, hidden information, and contamination or leakage controls.
 - **Cost / resource method**: budget definition, accounting units, expansion or stopping rule, and what qualifies as a successful low-cost run.
 
-For complex methods, include a numbered lifecycle, a compact formula or schema when the paper gives one, and a small running example or failure case when it clarifies a branch. When a mechanism is hard to understand from a direct explanation alone, optionally place a compact `Q:` / `A:` pair immediately after the relevant core point. Treat Q&A as a local explanation attached to that point: never create a standalone Q&A heading or section, and never collect questions about unrelated points in one place. Use plain questions and direct answers without any role labels. Do not force Q&A into simple points or papers.
+For complex methods, include a numbered lifecycle, a compact formula or schema when the paper gives one, and a small running example or failure case when it clarifies a branch. When a mechanism is hard to understand from a direct explanation alone, optionally place a QUESTION callout immediately after the relevant core point: the question goes in the callout title and the answer in the body (`> [!QUESTION] <question>` / `> <answer>`). Treat Q&A as a local explanation attached to that point: never create a standalone Q&A heading or section, and never collect questions about unrelated points in one place. Use plain questions and direct answers. Choose the callout's default state by the expand/collapse principle in the `obsidian-markdown` skill — since Q&A is supplementary, it leans collapsed (`> [!QUESTION]-`) unless the answer is short and essential. Do not force Q&A into simple points or papers.
 
 Apply the formula-callout requirement whenever an equation carries part of the method: reproducing the equation without explaining its parameters and overall relationship is incomplete. Place benchmark-specific validation and evaluator details in this section or directly beside it, not only under experiments or limitations. Before handoff, check that a reader can answer: “what enters the method, what changes at each step, why it advances or stops, and what artifact is judged?”
 
