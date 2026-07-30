@@ -92,8 +92,8 @@ def candidate_paths(base_dir, vault_root, papers_root, target):
     expanded = []
     for candidate in candidates:
         expanded.append(candidate)
-        if candidate.suffix == "":
-            expanded.append(candidate.with_suffix(".md"))
+        if candidate.suffix != ".md":
+            expanded.append(Path(f"{candidate}.md"))
     return expanded
 
 
@@ -116,7 +116,7 @@ def resolve_target(source_file, vault_root, papers_root, stem_index, target):
     return None, fragment
 
 
-def frontmatter_fields(text):
+def frontmatter_raw_fields(text):
     match = FRONTMATTER_RE.match(text)
     if not match:
         return {}
@@ -126,8 +126,15 @@ def frontmatter_fields(text):
         if not line or line.startswith("#") or ":" not in line:
             continue
         key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip().strip('"').strip("'")
+        fields[key.strip()] = value.strip()
     return fields
+
+
+def frontmatter_fields(text):
+    return {
+        key: value.strip('"').strip("'")
+        for key, value in frontmatter_raw_fields(text).items()
+    }
 
 
 def heading_set(text):
@@ -219,11 +226,16 @@ def check_library(papers_root, issues):
             continue
         for note_file in note_files:
             text = note_file.read_text(encoding="utf-8", errors="ignore")
+            raw_fields = frontmatter_raw_fields(text)
             fields = frontmatter_fields(text)
             if not fields.get("id"):
                 issues.append(Issue("error", note_file, "frontmatter missing id"))
             if not fields.get("source"):
                 issues.append(Issue("error", note_file, "frontmatter missing source"))
+            if "status" in raw_fields:
+                issues.append(Issue("error", note_file, "frontmatter uses deprecated paper-note status"))
+            if "read" in raw_fields and raw_fields["read"] not in {"true", "false"}:
+                issues.append(Issue("error", note_file, "frontmatter read must be an unquoted Boolean"))
 
 
 def check_inventory(papers_root, issues):

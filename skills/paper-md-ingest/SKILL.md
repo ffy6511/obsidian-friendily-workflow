@@ -56,11 +56,11 @@ After setup, read preferences silently and never re-ask. Users can also edit `pr
 7. If HTML is unavailable, download the official arXiv PDF (`https://arxiv.org/pdf/<id>`), read `references/conversion.md`, check or install the pinned `lit` CLI (unless `[pdf_parser].tool` in `preferences.toml` specifies a different parser), route OCR with `lit is-complex`, and convert the PDF into a validated temporary Markdown file before replacing `paper.md`. PDF is preferred over the TeX source because it preserves structure (headings, tables, lists) and supports figure extraction. When `[figures].extract_from_pdf` and `[figures].upload_via_picgo` are enabled in `preferences.toml`, the extraction pipeline (`scripts/extract_pdf_figures.py`) automatically extracts figures from the PDF, uploads them to cloud storage, and rewrites the Markdown with public HTTPS URLs. See [PDF Figure Extraction with PicGo](references/conversion.md#pdf-figure-extraction-with-picgo) in the conversion reference.
 8. If the PDF is also unavailable, use arXiv source and convert the TeX tree to `paper.md` as a last resort. The TeX fallback strips figure, table, equation, and list environments, so it produces only narrative text.
 9. Create or update one reading-note `.md` file under `library/<paper-id>/` in the user's working language as the canonical Obsidian note for the paper. `NOTES.md` is the default; a short title filename is allowed when it improves human navigation. When `paper.md` exposes usable HTML figures, select the one to three that explain the paper's mechanism, protocol, or main result and add them to the note with a concise reading cue; omit decorative or redundant figures.
-10. Add a `source` field in the reading note frontmatter pointing to the best human-readable official source, usually arXiv HTML or official PDF.
+10. Add a `source` field in the reading note frontmatter pointing to the best human-readable official source, usually arXiv HTML or official PDF. New reading notes must also use the Boolean property `read: false` so Obsidian renders an unchecked checkbox. Never infer `read: true` from ingest completion, note depth, or agent-generated annotations; only the user marks a paper as read.
 11. Update `PAPERS.md` manually after batch generation.
 12. Update `projects/<project>.md` only when the request explicitly identifies that active project or establishes unambiguous project ownership. A radar action alone does not establish project ownership. When no project is named, keep the canonical note project-neutral and use an existing topic index only when the grouping is genuinely long-lived.
 13. If the paper belongs in a project-independent long-term grouping, create or update the relevant `topics/<topic>.md` index instead of inventing a project map.
-14. Run `scripts/validate_papers_workspace.py` and fix every broken Markdown link, Obsidian wikilink/embed, missing heading target, missing `paper.md`, missing reading note, and missing `id/source` frontmatter field. For roadmap canvas edits, also validate that the `.canvas` file is parseable JSON and every edge references an existing node.
+14. Run `scripts/validate_papers_workspace.py` and fix every broken Markdown link, Obsidian wikilink/embed, missing heading target, missing `paper.md`, missing reading note, missing `id/source` frontmatter field, legacy paper-note `status`, and non-Boolean `read` value. For roadmap canvas edits, also validate that the `.canvas` file is parseable JSON and every edge references an existing node.
 
 ## Directory Shape
 
@@ -131,7 +131,7 @@ Manifest schema:
     "title": "Improving User Interface Generation Models from Designer Feedback",
     "authors": "Wu et al.",
     "year": 2025,
-    "status": "key",
+    "read": false,
     "tags": ["feedback-learning", "designer-feedback", "ui-generation"],
     "source": "arxiv:2509.16779",
     "note_filename": "Improving UI Generation from Designer Feedback.md",
@@ -180,12 +180,14 @@ Each `library/<paper-id>/<reading-note>.md` note must have frontmatter:
 id: <paper-id>
 title: '<title>'
 year: <year>
-status: inbox|to-read|reading|key|done
+read: false
 source: '<official html/pdf/source url>'
 tags:
   - <tag>
 ---
 ```
+
+`read` is an Obsidian Checkbox backed by an unquoted YAML Boolean. Every newly ingested note starts with `read: false`; the user changes it to `read: true` after personally reading the paper. Do not add `status` to paper reading notes. In an existing migrated workspace, an already-read note may omit `read`; the validator accepts that convention, while any present `read` value must be exactly `true` or `false`.
 
 The body must use the user's working language, inferred from the request and manifest. Keep the section structure equivalent even when translating headings. Write like a senior researcher teaching an intelligent newcomer: start high-level, make the causal chain explicit, and prefer concrete examples over jargon or encyclopedic accumulation.
 
@@ -319,6 +321,6 @@ ROOT="papers"
 "$PY" "$PAPER_MD_INGEST_DIR/scripts/validate_papers_workspace.py" --papers-root "$ROOT"
 ```
 
-The validator must pass before handing off. It checks library structure, reading-note frontmatter, `PAPERS.md` inventory coverage, Markdown links, Obsidian wikilinks/embeds, and embedded heading targets. `--check-remote-images` additionally fetches selected figures and requires `image/*`; use it whenever figures change.
+The validator must pass before handing off. It checks library structure, reading-note frontmatter, the absence of legacy paper-note `status`, Boolean syntax for `read` when present, `PAPERS.md` inventory coverage, Markdown links, Obsidian wikilinks/embeds, and embedded heading targets. `--check-remote-images` additionally fetches selected figures and requires `image/*`; use it whenever figures change.
 
 For roadmap canvas edits, follow the canvas JSON validation rules in the `obsidian-vault` skill's [Roadmap Canvas](../obsidian-vault/references/roadmap-canvas.md) reference: parse the `.canvas` file, check that every `fromNode` and `toNode` exists, and verify explanation-edge colors and alignment.

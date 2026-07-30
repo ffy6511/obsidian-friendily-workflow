@@ -383,6 +383,9 @@ def infer_note_language(record):
 def write_notes(path, record, final_source):
     labels = NOTE_LABELS[infer_note_language(record)]
     tags = record.get("tags") or []
+    read = record.get("read", False)
+    if not isinstance(read, bool):
+        raise ValueError(f"read must be a JSON Boolean for {record.get('id', path.parent.name)}")
     summary = record.get("summary") or []
     if isinstance(summary, str):
         summary = [summary]
@@ -411,7 +414,7 @@ def write_notes(path, record, final_source):
         f"id: {record['id']}",
         f"title: {yaml_scalar(record.get('title', record['id']))}",
         f"year: {record.get('year', '')}",
-        f"status: {record.get('status', 'to-read')}",
+        f"read: {'true' if read else 'false'}",
         f"source: {yaml_scalar(final_source)}",
         "tags:",
     ]
