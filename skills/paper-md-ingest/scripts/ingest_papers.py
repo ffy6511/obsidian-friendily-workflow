@@ -540,7 +540,19 @@ def ingest_one(record, library_root):
                 except Exception:
                     md = ""
         else:
-            md, final_source = source_to_markdown(arxiv_id)
+            # HTML unavailable: prefer the official arXiv PDF over the TeX
+            # source. PDF preserves structure (headings, tables, lists) and
+            # supports figure extraction; the TeX fallback strips figure,
+            # table, equation, and list environments.
+            pdf_url = f"https://arxiv.org/pdf/{strip_version(arxiv_id)}"
+            md = ""
+            try:
+                md, final_source, pdf_figures = pdf_to_markdown(pdf_url)
+            except Exception as e:
+                print(f"warning: arXiv PDF conversion failed for {arxiv_id}: {e}", file=sys.stderr)
+            if not md.strip():
+                print(f"info: falling back to TeX source for {arxiv_id}", file=sys.stderr)
+                md, final_source = source_to_markdown(arxiv_id)
     else:
         record["id"] = record["id"].strip()
         final_source = source

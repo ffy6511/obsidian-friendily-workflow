@@ -6,7 +6,6 @@ Use this reference before converting HTML, debugging conversion quality, or prom
 
 - [HTML to Markdown](#html-to-markdown)
 - [Promoting Figures into Reading Notes](#promoting-figures-into-reading-notes)
-- [TeX Fallback](#tex-fallback)
 - [PDF Fallback](#pdf-fallback)
   - [Output Contract](#output-contract)
   - [Check and Install LiteParse](#check-and-install-liteparse)
@@ -17,6 +16,7 @@ Use this reference before converting HTML, debugging conversion quality, or prom
   - [Remote PDFs](#remote-pdfs)
   - [Quality Gate](#quality-gate)
   - [Last-resort Fallback](#last-resort-fallback)
+- [TeX Fallback](#tex-fallback)
 
 ## HTML to Markdown
 
@@ -55,11 +55,9 @@ Use this Markdown shape:
 阅读提示：关注训练、validation 与 test 如何隔离，避免把优化器看到的反馈误当作测试证据。
 ```
 
-## TeX Fallback
-
-When HTML is unavailable, download `https://arxiv.org/e-print/<id>`, extract the archive, locate `main.tex` or the most likely root TeX file, recursively inline `\input{}` and `\include{}` when possible, then strip common LaTeX commands into Markdown.
-
 ## PDF Fallback
+
+When HTML is unavailable, the official PDF is the first fallback (arXiv: `https://arxiv.org/pdf/<id>`). PDF preserves structure — headings, tables, lists — and supports figure extraction, so it is preferred over the TeX source.
 
 For non-arXiv or PDF-only material, use [LiteParse](https://github.com/run-llama/liteparse) as the default local parser. Keep the official PDF URL in the reading note's `source` frontmatter field. Download the PDF into a temporary directory unless the user explicitly asks to archive it.
 
@@ -344,3 +342,7 @@ pdftotext -layout document.pdf output.txt
 ```
 
 Treat `pdftotext`, `pdfplumber`, and `pypdf` as raw-text recovery tools. They do not satisfy the normal structured Markdown contract for scans, complex tables, equations, figures, or difficult multi-column reading order. Do not use them to produce a seemingly successful but empty or misleading `paper.md`; stop and report that structured PDF conversion remains unresolved.
+
+## TeX Fallback
+
+Use the TeX source only as a last resort, when both HTML and the official PDF are unavailable. Download `https://arxiv.org/e-print/<id>`, extract the archive, locate `main.tex` or the most likely root TeX file, recursively inline `\input{}` and `\include{}` when possible, then strip common LaTeX commands into Markdown. This path strips figure, table, equation, and list environments, so it yields only the narrative text — structure and figures are lost.
