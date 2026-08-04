@@ -1,0 +1,25 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Obsidian Public Sync — User Preferences (EXAMPLE)
+#
+# Copy this file to preferences.toml and set your local paths:
+#
+#   cp preferences.example.toml preferences.toml
+#
+# preferences.toml is gitignored — keep the real file only on your machine.
+# CLI flags --source-root / --public-root always override this file.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Set true after first-time setup. When false or missing, the agent must guide
+# setup before syncing.
+initialized = false
+
+# Private Obsidian vault root (source of notes).
+# Use ~ for home, or an absolute path. Replace with your vault.
+source_root = "~/path/to/private-vault"
+
+# Public Quartz repository root (destination).
+# Notes are copied under content_subdir (default "content").
+public_root = "~/path/to/public-quartz-repo"
+
+# Subdirectory inside public_root that holds Quartz content.
+content_subdir = "content"

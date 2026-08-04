@@ -8,7 +8,7 @@ This is a private Obsidian vault and working-memory repository.
 - Do not create a `publish/` directory.
 - Do not commit or edit `.obsidian/` unless the user explicitly asks.
 - Do not move large groups of files without preserving relative asset links.
-- Do not delete migrated source material from `/Users/zhuo/Developer/MyTypst` unless explicitly asked.
+- Do not delete migrated source material from any external archive (e.g. a former Typst tree) unless explicitly asked.
 
 ## Organization
 

@@ -1,17 +1,37 @@
 ---
 name: obsidian-public-sync
-description: Sync selected notes from this private Obsidian vault into the sibling public Quartz repository while preserving vault-relative paths and resolving Obsidian wikilink dependencies. Use when the user asks to sync, publish, copy, migrate, or update one or more notes or folders in the public site, especially requests such as “同步到公开仓库” or “发布这篇笔记”.
+description: Sync selected notes from a private Obsidian vault into a public Quartz repository while preserving vault-relative paths and resolving Obsidian wikilink dependencies. Use when the user asks to sync, publish, copy, migrate, or update one or more notes or folders in the public site, especially requests such as “同步到公开仓库” or “发布这篇笔记”.
 ---
 
 # Obsidian Public Sync
 
+## User Preferences (`preferences.toml`)
+
+Local roots live in preferences — never hardcode machine paths in this skill.
+
+| File | Role | Git |
+| --- | --- | --- |
+| `preferences.example.toml` | Documented template | tracked |
+| `preferences.toml` | Real local paths | **gitignored** |
+
+### First-time setup
+
+When `preferences.toml` is missing or `initialized` is `false`:
+
+1. `cp preferences.example.toml preferences.toml`
+2. Set `source_root` (private vault) and `public_root` (Quartz repo)
+3. Optionally set `content_subdir` (default `content`)
+4. Set `initialized = true`
+
+After setup, read preferences silently. CLI `--source-root` / `--public-root` / `--content-subdir` always override the file (tests / one-off relocation).
+
 ## Contract
 
-### Fixed paths
+### Paths
 
-- Use `~/Developer/ob-notes` as the source vault.
-- Use `~/Developer/ob-notes-public` as the public Quartz repository and sync into its `content/` directory.
-- Derive both paths automatically from this project-level skill. Do not ask the user for either path and do not pass `--source-root` or `--public-root` during normal use. Keep those flags for isolated tests or an explicit future relocation only.
+- Resolve vault and public roots from `preferences.toml` (or CLI overrides).
+- Sync into `<public_root>/<content_subdir>/` (default `content/`).
+- Do not ask for paths on every run once initialized.
 
 ### Sync rules
 
@@ -23,11 +43,12 @@ description: Sync selected notes from this private Obsidian vault into the sibli
 
 ## Workflow
 
-### 1. Inspect scope
+### 1. Preferences + inspect scope
 
-1. Resolve every user-supplied path relative to the source vault. Reject paths outside it.
-2. Inspect the target repository status and the named source files before modifying anything.
-3. Locate the skill directory and run the script in dry-run mode:
+1. Ensure preferences are initialized (see above).
+2. Resolve every user-supplied path relative to the source vault. Reject paths outside it.
+3. Inspect the target repository status and the named source files before modifying anything.
+4. Locate the skill directory and run the script in dry-run mode:
 
 ```bash
 PY="${PY:-python3}"
@@ -48,19 +69,19 @@ After reviewing the dry-run inventory, run the same command without `--dry-run`.
   --source <vault-relative-path>
 ```
 
-The script copies each file to the matching path below `content/`, reports unresolved local references, and never deletes destination files. Treat unresolved references as an audit task: copy the missing source if it is meant to be public, rewrite the source link only when the user asks, or leave an intentional external/non-public reference documented in the handoff.
+The script copies each file to the matching path under the public content directory, reports unresolved local references, and never deletes destination files. Treat unresolved references as an audit task: copy the missing source if it is meant to be public, rewrite the source link only when the user asks, or leave an intentional external/non-public reference documented in the handoff.
 
 ### 3. Validate the public site
 
-Run the Quartz build from the public repository after every sync:
+Run the Quartz build from the public repository path in preferences after every sync:
 
 ```bash
-cd ../ob-notes-public
+cd <public_root from preferences.toml>
 npx quartz plugin install --from-config
 npx quartz build
 ```
 
-Check that the copied note, each copied attachment, and any copied Canvas page appear in `public/`. Inspect the generated page or the build output when the source contains Obsidian links, embeds, attachments, Canvas, callouts, Mermaid, or non-ASCII filenames.
+Check that the copied note, each copied attachment, and any copied Canvas page appear in the site output. Inspect the generated page or the build output when the source contains Obsidian links, embeds, attachments, Canvas, callouts, Mermaid, or non-ASCII filenames.
 
 ### 4. Hand off
 

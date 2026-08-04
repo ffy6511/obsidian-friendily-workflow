@@ -34,8 +34,16 @@ class Unresolved:
     reference: Reference
 
 
-def default_source_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+def _load_pref_roots() -> tuple[Path | None, Path | None, str]:
+    """Load source/public roots from preferences.toml when present."""
+    scripts_dir = Path(__file__).resolve().parent
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        from preferences import resolve_roots
+    except ImportError:
+        return None, None, "content"
+    return resolve_roots()
 
 
 def is_within(path: Path, root: Path) -> bool:
@@ -180,8 +188,23 @@ def public_metadata(path: Path) -> list[str]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", nargs="+", required=True, help="Vault-relative source file(s) or folder(s)")
-    parser.add_argument("--source-root", type=Path, default=default_source_root())
-    parser.add_argument("--public-root", type=Path, help="Public Quartz repository; defaults to sibling ob-notes-public")
+    parser.add_argument(
+        "--source-root",
+        type=Path,
+        default=None,
+        help="Private vault root (default: preferences.toml source_root)",
+    )
+    parser.add_argument(
+        "--public-root",
+        type=Path,
+        default=None,
+        help="Public Quartz repo root (default: preferences.toml public_root)",
+    )
+    parser.add_argument(
+        "--content-subdir",
+        default=None,
+        help="Content directory under public root (default: preferences.toml content_subdir or 'content')",
+    )
     parser.add_argument("--no-wikilinks", action="store_true", help="Do not follow wikilinks to note files")
     parser.add_argument("--allow-homepage-overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -191,13 +214,33 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    source_root = args.source_root.expanduser().resolve()
-    public_root = (args.public_root or source_root.parent / "ob-notes-public").expanduser().resolve()
-    content_root = public_root / "content"
+    pref_source, pref_public, pref_content = _load_pref_roots()
+
+    source_raw = args.source_root or pref_source
+    public_raw = args.public_root or pref_public
+    content_subdir = (args.content_subdir or pref_content or "content").strip() or "content"
+
+    if source_raw is None:
+        raise ValueError(
+            "source root not set. Copy preferences.example.toml to preferences.toml "
+            "and set source_root, or pass --source-root."
+        )
+    if public_raw is None:
+        raise ValueError(
+            "public root not set. Copy preferences.example.toml to preferences.toml "
+            "and set public_root, or pass --public-root."
+        )
+
+    source_root = Path(source_raw).expanduser().resolve()
+    public_root = Path(public_raw).expanduser().resolve()
+    content_root = public_root / content_subdir
     if not source_root.is_dir():
-        raise ValueError("Source vault root does not exist")
+        raise ValueError(f"Source vault root does not exist: {source_root}")
     if not public_root.is_dir():
-        raise ValueError("Public repository root does not exist")
+        raise ValueError(f"Public repository root does not exist: {public_root}")
+    if not content_root.is_dir() and not args.dry_run:
+        # content/ may be created by first copy; only require public root to exist
+        pass
 
     resolver = Resolver(source_root)
     roots = source_paths(args.source, source_root)
