@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare Release"
+  short_description: "Draft bilingual release notes; ship only when asked"
+  default_prompt: "Use $prepare-release to draft bilingual release notes since the last package release (update project version first if needed; do not tag/push unless I say ship)."

@@ -37,6 +37,7 @@
 | --- | --- |
 | [`as-far-as-i-know`](skills/as-far-as-i-know/SKILL.md) | 用户写当前理解；agent 先给结论（共识 / 部分共识 / 未达成共识 / 证据不足），再给事实论据。不客套附和。 |
 | [`staged-commit-message`](skills/staged-commit-message/SKILL.md) | 按 staged diff + 近期 commit 文风写 Conventional Commit。默认一条；意图能分开时（或用户要求时）拆多条，写入 `COMMIT.md`。只有用户明确说「提交」才 `git commit`。 |
+| [`prepare-release`](skills/prepare-release/SKILL.md) | 发版准备：先核对/声明项目版本；默认只根据上次发版以来的提交起草中英双语 release note；只有用户明确说「直接发版 / ship」才 tag/发布。 |
 
 
 ## 其他
