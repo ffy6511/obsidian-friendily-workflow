@@ -78,11 +78,11 @@ Include only **user-visible** or **operator-visible** change. Drop pure chore no
 ## Draft notes (always in Draft; also produce before Ship)
 
 1. Read **all** commits in `BASE..HEAD` (subjects first; bodies next).
-2. Cluster by intent → Conventional categories: `Feat` / `Fix` / `Refactor` / `Perf` / `Docs` / `Test` / `Build` / `CI` / `Chore` (omit empty categories).
+2. Cluster by intent (same buckets both languages). **Headings are language-native**: 中文用 `新功能` / `修复` / `改进` / `性能` / `文档` / …；English 用 `Feat` / `Fix` / `Refactor` / `Perf` / `Docs` / … (omit empty). See [references/note-format.md](references/note-format.md) for the full mapping.
 3. **Match historical release-note voice (default when history exists)**  
    Load the latest prior package notes if any exist: GitHub Release body for the previous tag, `CHANGELOG*`, `RELEASE_NOTES*`, `docs/releases/*`, or repo-local `tmp/RELEASE_NOTES*` only when that is clearly the approved draft for this ship.  
    Align register, density, heading/bullet shape, and bilingual layout with that history. The format guide is a **fallback** when there is no prior package note (first release) or history is unusable.
-4. Write **two modules**: **中文 first**, then **English**. Same structure and coverage; do not leave one language thinner without reason.
+4. Write **two modules**: **中文 first**, then **English**. Same structure and coverage; do not leave one language thinner without reason. Chinese category headings must stay Chinese—never mirror English `Feat`/`Fix` into the 中文 block.
 5. **Body opening**: start with the Chinese summary paragraph—**no** `# Project vX.Y.Z` / version H1, **no** leading `## 中文`. After the Chinese categories, use `## English` then the English summary. Put the product+version only on the GitHub Release / tag title when shipping.
 6. Format baseline: see [references/note-format.md](references/note-format.md)—defer to step 3 when history conflicts with the guide (except body-opening rules above, which always apply).
 
@@ -158,12 +158,12 @@ Release title (outside body): `BORA v0.1.0`
 ```markdown
 本版本首次打包公开入口……（正文第一段直接是中文 summary）
 
-### Feat
+### 新功能
 
 - **配置锁定**: 提供 `bora lock` 生成可复现摘要。基于 Config Core 的 load_and_lock。
 - **单次运行**: 提供 `bora run` 前台 Attempt 竖切。含独立 evaluator 与 fail-closed 离线路径。
 
-### Fix
+### 修复
 
 - **进程清理**: 修复 writer-stop 确认与 residual 进程组清理。避免 Attempt 结束后残留子进程。
 

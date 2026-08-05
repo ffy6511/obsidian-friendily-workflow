@@ -15,16 +15,16 @@ Two modules in order: **中文**, then **English**. Same facts; natural phrasing
 ```markdown
 <one Chinese summary paragraph — first line of the body, no heading above it>
 
-### Feat
+### 新功能
 
 - **<简洁短语>**: <一两句话介绍>. <可选：实现细节或其他补充>
 - **<简洁短语>**: <一两句话介绍>.
 
-### Fix
+### 修复
 
 - **<简洁短语>**: <一两句话介绍>. <可选补充>
 
-### Docs
+### 文档
 
 - **<简洁短语>**: <一两句话介绍>.
 
@@ -63,17 +63,22 @@ Two modules in order: **中文**, then **English**. Same facts; natural phrasing
 
 ### Category headings
 
-Use only categories that have items. Preferred order:
+Use only categories that have items. **Chinese module uses Chinese headings; English module uses English headings**—do not put `Feat` / `Fix` under the Chinese block.
 
-1. `Feat`
-2. `Fix`
-3. `Refactor` (user-visible behavior or API cleanup)
-4. `Perf`
-5. `Docs`
-6. `Test` (only if operators/contributors care)
-7. `Build` / `CI` / `Chore` (install surface, packaging, required tooling)
+| Intent (cluster) | 中文标题 | English |
+| --- | --- | --- |
+| New capabilities | `新功能` | `Feat` |
+| Bug fixes | `修复` | `Fix` |
+| Behavior/API cleanup (user-visible) | `改进` | `Refactor` |
+| Performance | `性能` | `Perf` |
+| Documentation | `文档` | `Docs` |
+| Tests (if operators/contributors care) | `测试` | `Test` |
+| Install / packaging / tooling | `构建` / `CI` / `杂项` | `Build` / `CI` / `Chore` |
+| Breaking change (when needed) | `破坏性变更` | `Breaking` |
 
-Rename only if the repo’s audience uses different labels consistently (e.g. `Breaking`); keep bilingual headings parallel.
+Preferred order: 新功能 → 修复 → 改进 → 性能 → 文档 → 测试 → 构建 / CI / 杂项 (and the English row in the same order).
+
+Omit empty categories. Keep the same category set on both sides when both languages ship.
 
 ### Bullet shape (required)
 
