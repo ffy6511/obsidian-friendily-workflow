@@ -189,7 +189,28 @@ tags:
 
 `read` is an Obsidian Checkbox backed by an unquoted YAML Boolean. Every newly ingested note starts with `read: false`; the user changes it to `read: true` after personally reading the paper. Do not add `status` to paper reading notes. In an existing migrated workspace, an already-read note may omit `read`; the validator accepts that convention, while any present `read` value must be exactly `true` or `false`.
 
-The body must use the user's working language, inferred from the request and manifest. Keep the section structure equivalent even when translating headings. Write like a senior researcher teaching an intelligent newcomer: start high-level, make the causal chain explicit, and prefer concrete examples over jargon or encyclopedic accumulation.
+The body must use the user's working language, inferred from the request and manifest. Keep the section structure equivalent even when translating headings.
+
+### Voice and plain-language style
+
+Write like a sharp senior researcher teaching an intelligent newcomer who is busy, not like a paper abstract restated in Chinese. The target tone is the same as a clear hallway explanation: direct, concrete, and slightly conversational without slang or filler.
+
+Hard rules:
+
+- **Plain language first, jargon second.** Lead with what the system does in ordinary words; introduce the paper's term immediately after, with a footnote marker when the term is a real comprehension blocker. Prefer “把历史压进固定大小的矩阵，再轻轻扳一下 attention 方向” over stacking undefined English nouns.
+- **One causal chain per paragraph.** Say what breaks, what the method changes, and what that enables. Do not pile background citations, acronym expansions, and results into the same sentence.
+- **Prefer scenes and jobs over taxonomy dumps.** “长程助手不能只答当前这一句，还得记住以前发生过的事” beats “面向 long-horizon agentic scenarios 的 memory-augmented LLM systems”.
+- **Keep technical teeth.** Notation, thresholds, component names, and benchmark numbers stay exact. Plain language explains them; it does not replace them with vague paraphrase.
+- **Short sentences and active verbs.** Cut throat-clearing openers, symmetrical three-part slogans, and review-article cadence. If a sentence needs a second read, split it.
+- **Tables may use plain column headers.** Headers such as `白话`, `主要卡点`, `缺了会怎样` are encouraged when they help scanning; keep the cell content concrete.
+- **Reading cues stay operational.** Figure captions should tell the reader what to inspect, not restate the image title.
+
+Anti-patterns to reject:
+
+- Encyclopedia tone: definition lists with no “why it matters here”.
+- Abstractese: “提出一种新颖框架以有效提升复杂场景下的综合表现”.
+- Jargon carpet-bombing: a paragraph that only natives of the subfield can parse.
+- Footnote-shaped body text: burying the only explanation of a key term in dense prose with no marker and no `## 概念注释` entry.
 
 ### Table-first comparisons
 
@@ -206,6 +227,7 @@ Keep prose before or after the table only for the causal conclusion, caveat, or 
 ## 问题定义
 
 论文具体解决什么问题？为什么重要？既有方法的根本瓶颈是什么？
+能列表或表格时，用读者能扫懂的对比说明旧方案卡在哪里。
 
 ## 方法
 
@@ -219,6 +241,7 @@ Keep prose before or after the table only for the causal conclusion, caveat, or 
 ## 实验：证据如何支撑结论
 
 说明每组实验要支持哪项主张、关键图表与数字应如何阅读、证据是否充分，以及缺少哪些 baseline 或 ablation。
+主张列写成读者能直接反驳的判断句，不要写成空泛的“有效性”“优越性”。
 
 ## 局限与开放问题
 
@@ -226,9 +249,9 @@ Keep prose before or after the table only for the causal conclusion, caveat, or 
 
 ## 概念注释
 
-在术语首次出现处用脚注补充理解正文所必需的概念，例如 `DeBERTa[^deberta]`。这里集中放置简短定义：
+在术语首次出现处挂脚注标记，例如 `harness[^harness]`。这里集中放置定义；每条必须同时说明“是什么”和“在本文里干什么”：
 
-[^deberta]: **DeBERTa**：一种 encoder-only 预训练语言模型；继续说明它在本文方法中的具体职责。
+[^harness]: **Inference harness（推理编排层）**：套在模型外面的运行时，负责多轮循环、工具调用和上下文管理。本文训练的是“模型 + 真实 harness”，不是裸 completion。
 ```
 
 `## 与当前项目的关系` 是可选章节。只有 manifest 提供非空 `relevance`，且该关系来自请求中指定的项目时才写入；没有项目上下文时不要留下空标题、`TODO` 或泛泛的关联判断。
@@ -239,7 +262,17 @@ Do not add separate `基本信息` / `Basic Info`, `论文定位` / `Paper Posit
 
 ### Terminology Footnotes
 
-Follow the terminology footnote rules in the `obsidian-markdown` skill. Use a `## 概念注释` / `## Terminology Notes` section near the end of the reading note. Add markers at the first meaningful occurrence of each specialized term. Use stable lowercase ids such as `[^deberta]`.
+Follow the terminology footnote rules in the `obsidian-markdown` skill, and treat `## 概念注释` as a required quality surface rather than an optional appendix dump.
+
+Requirements:
+
+- Place the marker at the **first meaningful occurrence** in the body (`term[^id]`). Do not leave definitions only in the end section with zero markers, and do not mark the same term repeatedly.
+- Collect definitions under `## 概念注释` / `## Terminology Notes` near the end. Every marker has exactly one definition; every definition is referenced at least once.
+- Each entry must answer both: **what it is** and **what role it plays in this paper**. One or two plain sentences beat a dictionary gloss.
+- Prioritize note-specific blockers: method jargon, training objectives, evaluation protocols, system components, and paper-coined names. Skip common terms the target reader already knows.
+- Use stable lowercase ids such as `[^deberta]`, `[^grpo]`, `[^train-deploy-mismatch]`.
+- When a Chinese plain gloss helps, put it in parentheses after the bold term: `**Delta-rule / 残差写入**` or `**pass@k / pass³**`.
+- A reading note that introduces specialized machinery without a usable `## 概念注释` section is incomplete.
 
 ### Formula and Complex-Concept Callouts
 
