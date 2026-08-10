@@ -2,11 +2,11 @@
 name: staged-commit-message
 description: >
   Draft Conventional Commit message(s) from git changes (default: one commit from
-  staged diff, language/style from recent history) and write COMMIT.md. When the
-  change set has multiple independent purposes—or the user asks—split into several
-  focused commits with explicit file groups for clarity. Use when the user asks to
-  draft/update COMMIT.md, prepare commit text from staged files, split a messy
-  stage into clean commits, or create local commits without rewriting history.
+  staged diff, language/style from recent history). When the change set has multiple
+  independent purposes—or the user asks—split into several focused commits with
+  explicit file groups for clarity. Use when the user asks to prepare commit text
+  from staged files, split a messy stage into clean commits, or create local
+  commits without rewriting history.
 ---
 
 # Staged Commit Message
@@ -20,8 +20,8 @@ Never invent changes. Prefer evidence from git over chat summary.
 
 | Mode | When | Deliverable |
 | --- | --- | --- |
-| **Draft** (default) | User wants message / `COMMIT.md` | Write `COMMIT.md` only; do not `git commit` |
-| **Commit** | User explicitly asks to commit / 提交 | Create local commit(s); still may write `COMMIT.md` if useful |
+| **Draft** (default) | User wants message text | Present message(s) in the reply only; do not `git commit` |
+| **Commit** | User explicitly asks to commit / 提交 | Create local commit(s) with the drafted message(s) |
 
 If unclear, **draft only**.
 
@@ -87,10 +87,10 @@ Each commit:
 
 When co-changing UI / data contracts / release process / vault semantics, keep matching docs in the **same logical commit**, or a dedicated `docs` commit next to it—do not leave docs orphaned without reason.
 
-### 6. Write `COMMIT.md`
+### 6. Present message(s)
 
-- Default path: cwd `COMMIT.md` (overwrite, never append).
-- Plain commit text only for **single** commit (no fences, no commentary).
+- Output plain commit text in the reply (no extra commentary inside the message block).
+- For **single** commit: one message only.
 - For **multiple** commits, use this structure:
 
 ```text
@@ -113,6 +113,8 @@ paths:
 ```
 
 Order commits so later ones may depend on earlier (base/types before callers; code before pure docs only if docs describe that code).
+
+Do **not** write a `COMMIT.md` (or other message file) unless the user explicitly asks for a file.
 
 ### 7. Commit mode only (user asked to commit)
 

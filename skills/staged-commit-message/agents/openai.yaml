@@ -1,4 +1,4 @@
 interface:
   display_name: "Staged Commit Message"
   short_description: "One or split Conventional Commits from git"
-  default_prompt: "Use $staged-commit-message to draft Conventional Commit message(s) from staged changes (split only if needed for clarity) and write COMMIT.md."
+  default_prompt: "Use $staged-commit-message to draft Conventional Commit message(s) from staged changes (split only if needed for clarity)."
