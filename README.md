@@ -40,6 +40,7 @@
 | [`spec-driven-delivery`](skills/spec-driven-delivery/SKILL.md) | 快节奏 SDD：短 Spec + 用户故事/验收；执行时按 Phase 提交（对齐 staged-commit-message）；中途对抗审查默认关，收尾默认 subagent 查验收与代码质量并改。 |
 | [`staged-commit-message`](skills/staged-commit-message/SKILL.md) | 按 staged diff + 近期 commit 文风写 Conventional Commit。默认一条；意图能分开时（或用户要求时）拆多条，写入 `COMMIT.md`。只有用户明确说「提交」才 `git commit`。 |
 | [`prepare-release`](skills/prepare-release/SKILL.md) | 发版准备：先核对/声明项目版本；默认只根据上次发版以来的提交起草中英双语 release note；只有用户明确说「直接发版 / ship」才 tag/发布。 |
+| [`code-walkthrough-site`](skills/code-walkthrough-site/SKILL.md) | 自包含渐进代码讲解站：左文右 IDE、滚动 checkpoint 逐步揭代码；脚手架模板 + content 校验。 |
 
 
 ## 其他

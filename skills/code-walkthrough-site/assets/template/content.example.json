@@ -1,0 +1,65 @@
+{
+  "site": {
+    "title": "Tiny Greeter · progressive code walkthrough",
+    "brand": "Tiny Greeter",
+    "brandMark": "◇",
+    "description": "A minimal left-prose / right-code lesson that builds a two-file greeter.",
+    "lang": "zh-CN",
+    "repoLabel": "greeter /",
+    "themeStorageKey": "cws-tiny-greeter-theme"
+  },
+  "lessons": [
+    {
+      "id": "main",
+      "title": "用 20 行代码理解模块边界",
+      "description": "从空仓库开始，滚动阅读，右侧代码会跟着长出来。",
+      "readingTime": "5 min",
+      "markdown": "<!-- checkpoint: overview -->\n\n这是一篇**示范课文**。左侧是讲解，右侧是随滚动渐显的代码仓库。\n\n你会先认识两个文件的职责，再把它们写完整。\n\n> 不想让编辑器跟着跳？点右侧面板标题旁的锁。\n\n<!-- checkpoint: types -->\n\n## types.ts\n\n先约定数据长什么样。`GreetInput` 只有一个名字字段——后面 `greet()` 只认这个形状。\n\n<!-- checkpoint: greet-shell -->\n\n## greet.ts · 函数壳\n\n先写下导出函数和返回类型，实现先空着。模块边界比实现细节更重要。\n\n<!-- checkpoint: greet-body -->\n\n## greet.ts · 实现\n\n补上模板字符串。到这里，两个文件都齐了：types 管契约，greet 管行为。\n\n<!-- checkpoint: complete -->\n\n## 完成\n\n仓库已经完整。你可以用同样的节奏讲解任意小项目：空仓库 → 契约 → 骨架 → 实现 → 完成。\n",
+      "initialRepo": {},
+      "checkpoints": [
+        {
+          "id": "overview",
+          "label": "空仓库",
+          "file": "src/types.ts",
+          "repo": {}
+        },
+        {
+          "id": "types",
+          "label": "约定类型",
+          "file": "src/types.ts",
+          "repo": {
+            "src/types.ts": "export type GreetInput = {\n  name: string;\n};\n"
+          }
+        },
+        {
+          "id": "greet-shell",
+          "label": "函数壳",
+          "file": "src/greet.ts",
+          "repo": {
+            "src/types.ts": "export type GreetInput = {\n  name: string;\n};\n",
+            "src/greet.ts": "import type { GreetInput } from \"./types\";\n\nexport function greet(input: GreetInput): string {\n  return \"\";\n}\n"
+          }
+        },
+        {
+          "id": "greet-body",
+          "label": "补实现",
+          "file": "src/greet.ts",
+          "repo": {
+            "src/types.ts": "export type GreetInput = {\n  name: string;\n};\n",
+            "src/greet.ts": "import type { GreetInput } from \"./types\";\n\nexport function greet(input: GreetInput): string {\n  return `Hello, ${input.name}!`;\n}\n"
+          }
+        },
+        {
+          "id": "complete",
+          "label": "完成",
+          "file": "src/greet.ts",
+          "repo": {
+            "src/types.ts": "export type GreetInput = {\n  name: string;\n};\n",
+            "src/greet.ts": "import type { GreetInput } from \"./types\";\n\nexport function greet(input: GreetInput): string {\n  return `Hello, ${input.name}!`;\n}\n"
+          },
+          "focus": [4, 4]
+        }
+      ]
+    }
+  ]
+}

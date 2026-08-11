@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Walkthrough Site"
+  short_description: "Left prose, right progressive code reveal site"
+  default_prompt: "Use $code-walkthrough-site to turn this topic into a self-contained progressive code-reveal website I can open with one command."
