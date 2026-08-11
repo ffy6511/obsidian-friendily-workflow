@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec Driven Delivery"
+  short_description: "Short specs + phase commits + end acceptance check"
+  default_prompt: "Use $spec-driven-delivery. Short Specs with clear user stories and adversarial acceptance. When implementing: commit each Phase via $staged-commit-message; mid-flight Critic off; after Spec work, run a completion subagent on acceptance + code quality and fix findings."
