@@ -79,6 +79,13 @@ ACCEPTANCE_HEADINGS = (
     "Runnable Acceptance",
 )
 USER_STORY_HEADINGS = ("用户故事", "User Story")
+APPROACH_HEADINGS = (
+    "实现思路",
+    "Approach",
+    "设计",
+    "Design",
+    "Implementation Approach",
+)
 PHASES_HEADINGS = ("实施阶段", "Phases", "Implementation Phases")
 METADATA_HEADINGS = ("元数据", "Metadata")
 ARCH_STATUS_HEADINGS = ("文档状态", "Document Status")
@@ -446,15 +453,19 @@ class Validator:
             ):
                 self.warn("active_phases", path, "missing recommended Phases overview")
 
-            # Prefer top-level User Story + Acceptance (lean). Fall back to Increment Contract.
+            # Prefer top-level User Story + Acceptance + Approach (lean).
+            # Fall back to Increment Contract for story/acceptance when present.
             user_story = find_h2_section(structure, USER_STORY_HEADINGS)
             acceptance = find_h2_section(structure, ACCEPTANCE_HEADINGS)
+            approach = find_h2_section(structure, APPROACH_HEADINGS)
             increment = find_h2_section(structure, INCREMENT_CONTRACT_HEADINGS)
 
             if user_story is None and increment is not None:
                 user_story = find_subsection(increment, USER_STORY_HEADINGS)
             if acceptance is None and increment is not None:
                 acceptance = find_subsection(increment, ACCEPTANCE_HEADINGS)
+            if approach is None and increment is not None:
+                approach = find_subsection(increment, APPROACH_HEADINGS)
 
             if user_story is None:
                 self.error(
@@ -505,6 +516,27 @@ class Validator:
                             path,
                             "Acceptance should include success smoke and expected failure",
                         )
+
+            if approach is None:
+                self.error(
+                    "active_approach",
+                    path,
+                    "Active Spec is missing Approach/Design (实现思路) — story+acceptance alone are not enough",
+                )
+            else:
+                body = approach.strip()
+                if not re.search(r"\S", body) or is_placeholder(body):
+                    self.error(
+                        "active_approach_empty",
+                        path,
+                        "Approach/Design is empty or placeholder; write flow/pseudocode or link authority + local delta",
+                    )
+                elif not _looks_like_approach(body):
+                    self.warn(
+                        "active_approach_thin",
+                        path,
+                        "Approach should include control/data flow, pseudocode/interfaces, or exact authority links + local delta",
+                    )
 
             self._check_spec_lifecycle(path, text, in_active=True)
 
@@ -701,6 +733,26 @@ def _looks_like_user_story(body: str) -> bool:
         return True
     # Fallback: non-trivial multi-word statement
     return len(re.findall(r"\S+", text)) >= 6
+
+
+def _looks_like_approach(body: str) -> bool:
+    """True when Approach has implementable content or authority links + substance."""
+    text = body.strip()
+    if len(re.findall(r"\S+", text)) < 8:
+        return False
+    # Markdown links to existing authority (Constitution/docs/Architecture/Research).
+    has_link = bool(re.search(r"\[[^\]]+\]\([^)]+\)", text))
+    # Flow / structure cues (EN + ZH).
+    flow_cues = (
+        r"control\s*flow|data\s*flow|pseudocode|interface|schema|composition|"
+        r"控制流|数据流|伪代码|接口|组合根|entrypoint|→|->|-->"
+    )
+    has_flow = bool(re.search(flow_cues, text, re.IGNORECASE))
+    # Local delta language when mostly linking out.
+    has_delta = bool(
+        re.search(r"local\s*delta|本\s*spec|本地增量|delta|inherited|继承", text, re.IGNORECASE)
+    )
+    return has_flow or (has_link and (has_delta or len(re.findall(r"\S+", text)) >= 20))
 
 
 def has_md_link_to(text: str, target_suffix: str) -> bool:

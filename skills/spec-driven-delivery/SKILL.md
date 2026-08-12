@@ -22,9 +22,12 @@ vertical increment from a known baseline — not a module layer, not a documenta
 
 These are non-negotiable. Everything else is optional scaffolding.
 
-1. **User story + acceptance first.** Every implementation Spec must state a concrete
-   user story and acceptance criteria that a hostile reviewer can try to fail. If story
-   or acceptance is vague, stop and rewrite before coding.
+1. **Story + acceptance + approach.** Every implementation Spec needs (a) a concrete user
+   story, (b) adversarial acceptance criteria, and (c) a **minimum implementation approach**
+   (control flow, data flow, key interfaces, or short pseudocode for the changed path). Story
+   and acceptance alone are not enough to implement. If Constitution / `docs/` / Architecture
+   already spell the approach, **link the exact heading** and state only the local delta—do not
+   paste essays.
 2. **Vertical slice, not modules.** Roadmap and Specs are ordered by runnable user
    outcomes. Schema, adapters, and hardening live inside the thinnest slice that needs
    them.
@@ -36,7 +39,6 @@ These are non-negotiable. Everything else is optional scaffolding.
    project gate **and** one real public journey. No separate “foundation” Specs first.
 6. **Short docs, link authority.** Prefer a tight Spec over essays. Stable decisions go
    to Constitution; structure to `ARCHITECTURE.md`; unresolved questions to Research.
-   Do not restate long design when a link to an exact heading works.
 7. **Phase boundary = commit boundary (default on execute).** When this skill drives
    Spec implementation, finish one Phase → commit that facet → next Phase. Do not pile
    the whole Spec into one end-of-epic commit.
@@ -69,7 +71,7 @@ and a pointer to this skill. Templates and checklists live here, not in the proj
 | Roadmap      | Version outcomes need tracking                       | Successive runnable user outcomes + acceptance checkboxes |
 | Constitution | A long-lived decision or invariant changes           | Decision, invariants, short history                       |
 | Research     | Something is still unknown                           | Question, evidence, recommendation — not silent authority |
-| Active Spec  | Ready to implement one increment                     | User story, acceptance, phases, evidence                  |
+| Active Spec  | Ready to implement one increment                     | User story, acceptance, approach, phases, evidence        |
 | BLOCKED      | Unanticipated choice during execution                | Newest-first audit entry; does not override Specs         |
 | Archive      | Spec completed or cancelled                          | Historical record with status marker                      |
 
@@ -83,8 +85,9 @@ Init / authority / lifecycle: `references/workspace.md`.
 2. **Baseline** — Name the current public entrypoint, smoke, and observable result. Run it
    when possible. Restore a broken baseline before expanding.
 3. **Classify** — Architecture / Roadmap / Constitution / Research / Active Spec / skip.
-4. **Plan short** — For an Active Spec, write **User Story** and **Acceptance** before
-   Design or Phases. One story, one bounded scope, success + expected failure + regressions.
+4. **Plan short** — For an Active Spec, write **User Story**, **Acceptance**, and
+   **Approach** (or exact links + local delta) before Phases. One story, bounded scope,
+   runnable acceptance, and enough implementation direction to code without inventing the design.
 5. **Implement only when asked** — Small Phases; focused validation per Phase. Do not inflate
    a Phase into a mini-Spec. **Default: commit after each Phase** (see below). Mid-flight
    adversarial subagent review stays **off**.
@@ -96,18 +99,23 @@ Init / authority / lifecycle: `references/workspace.md`.
 8. **Close** — Archive / Roadmap / inbound links when acceptance and completion check are
    satisfied. Run the workspace validator if structure or Spec shape changed.
 
-## Active Spec minimum (adversarial review)
+## Active Spec minimum
 
-Every implementation Spec must make these easy to attack:
+Every implementation Spec must cover **what**, **how we'll know**, and **how we'll build**:
 
 ```text
 User Story:  As a <role>, I can <action via public entrypoint>, so that <observable result>.
 Acceptance:  exact success smoke · exact expected failure · affected regressions · evidence
+Approach:    control/data flow, key types/interfaces, or short pseudocode for the changed path
+             — OR exact links to Constitution/docs/Architecture that already define that path
+             + a local delta (what this Spec alone adds or changes)
 Scope:       included vertical minimum · deferred with a named owner (version / research / Spec)
 ```
 
-A reviewer should be able to: run the smoke, see the result, try the failure path, and say
-pass/fail without reading Design prose. If they cannot, the Spec is not ready.
+- **Acceptance (adversarial):** a reviewer runs only Acceptance items to pass/fail the Spec.
+- **Approach (implementable):** an executor can implement without inventing core control flow,
+  data shape, or composition. Prefer diagrams/pseudocode over long prose. Prefer **link + delta**
+  when a decision doc already has detail; never leave Approach empty.
 
 Prefer the lean template in `references/templates.md`. Skip Decision Summary tables,
 six-column prerequisite audits, and mid-flight Evaluation Records unless the project or

@@ -10,21 +10,23 @@ Heading names may be English or the Chinese equivalents recognized by the valida
 
 ## Active Spec (`specs/active/NN-<topic>-plan.md`)
 
-**Required for implementation Specs:** Metadata, User Story, Acceptance, Phases overview.
-Everything else is optional.
+**Required for implementation Specs:** Metadata, User Story, Acceptance, Approach (or
+Design), Phases overview. Everything else is optional.
 
-```markdown
+Heading for approach: **`## Approach`** or **`## Design`** (中文：`## 实现思路` / `## 设计`).
+
+~~~markdown
 # <Title>
 
 ## Metadata
 
-| Field        | Value           |
-| ------------ | --------------- |
-| Created      | YYYY-MM-DD      |
-| Status       | in-progress     |
-| Completed    | pending         |
-| Dependencies | none            |
-| Decisions    | <links or none> |
+| Field | Value |
+| --- | --- |
+| Created | YYYY-MM-DD |
+| Status | in-progress |
+| Completed | pending |
+| Dependencies | none |
+| Decisions | <links or none> |
 
 ## User Story
 
@@ -46,6 +48,25 @@ Adversarial: a reviewer runs only these items to pass/fail the Spec.
 - Included: <minimum vertical behavior>
 - Deferred: <named version / research / follow-up Spec — or "none">
 
+## Approach
+
+> Inherited: <exact Constitution / docs / Architecture links — or "none">
+>
+> Local delta: <what this Spec alone adds or changes>
+
+### Control flow
+
+    public entry → … → observable result
+    (branch / retry / fail-closed as needed)
+
+### Data flow
+
+- inputs → transforms → durable/observable outputs (only fields this Spec changes)
+
+### Pseudocode or key interfaces
+
+    // only the changed path — short
+
 ## Phases
 
 - [ ] Phase 0: <smallest useful step>
@@ -65,14 +86,16 @@ Adversarial: a reviewer runs only these items to pass/fail the Spec.
 
 - [ ] Focused validation for this Phase passes
 - [ ] Phase committed (or message drafted if user forbade commit)
-```
+~~~
+
+Keep Approach short. If a decision doc already has the full path, the section may be mostly
+**links + local delta**—but it must not be empty or “TBD”.
 
 ### Optional sections (add only when useful)
 
 | Section           | When                                                                                                 |
 | ----------------- | ---------------------------------------------------------------------------------------------------- |
 | Background        | Non-obvious problem / current behavior                                                               |
-| Design            | Non-obvious control/data flow, schema, or interface delta — link Constitution first                  |
 | Prerequisites     | External image/network/credential must be provisioned; name owner + verify command                   |
 | User Acceptance   | Explicit human / external UAT gate                                                                   |
 | Completion Check  | After executor smokes: default end subagent notes (verdict, findings, fixes) — not mid-flight Critic |
@@ -83,6 +106,13 @@ Adversarial: a reviewer runs only these items to pass/fail the Spec.
 - One Spec = one vertical increment. Not “finish the database module.”
 - User Story names a **real role**, **public action**, **observable result**.
 - Acceptance uses **exact** commands/paths a stranger can run. No “works correctly.”
+- **Approach is required:** enough control/data flow, types, or pseudocode that an executor
+  need not invent the design. Prefer fenced diagrams/pseudocode over essays.
+- **Link, don't paste:** when Constitution / `docs/` / Architecture already defines the
+  path, cite exact headings and write only the local delta. Metadata `Decisions` should
+  point at the same authority.
+- Omit Approach subsections that do not apply; do not leave empty stubs. At least one of
+  control flow, data flow, pseudocode/interfaces, or substantive inherited links must exist.
 - Phases stay small; temporary public-path gaps are OK mid-Spec, not at completion.
 - On execute: **one Phase → one commit facet** (`$staged-commit-message`); after all
   Phases/smokes, **default completion subagent** on Acceptance + in-scope code quality,

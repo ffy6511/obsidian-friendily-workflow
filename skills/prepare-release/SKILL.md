@@ -2,7 +2,7 @@
 name: prepare-release
 description: >
   Prepare a software package release: check/update project version, draft bilingual
-  (zh then en) release notes from git history since the last package release, and only
+  (en then zh) release notes from git history since the last package release, and only
   perform tag/publish/PR steps when the user explicitly asks to ship. Use when the user
   mentions release notes, changelog, 发版, 发布, release note, vX.Y.Z package version,
   GitHub Release, tag a release, or `$prepare-release`. Default is draft-only—never
@@ -82,8 +82,8 @@ Include only **user-visible** or **operator-visible** change. Drop pure chore no
 3. **Match historical release-note voice (default when history exists)**  
    Load the latest prior package notes if any exist: GitHub Release body for the previous tag, `CHANGELOG*`, `RELEASE_NOTES*`, `docs/releases/*`, or repo-local `tmp/RELEASE_NOTES*` only when that is clearly the approved draft for this ship.  
    Align register, density, heading/bullet shape, and bilingual layout with that history. The format guide is a **fallback** when there is no prior package note (first release) or history is unusable.
-4. Write **two modules**: **中文 first**, then **English**. Same structure and coverage; do not leave one language thinner without reason. Chinese category headings must stay Chinese—never mirror English `Feat`/`Fix` into the 中文 block.
-5. **Body opening**: start with the Chinese summary paragraph—**no** `# Project vX.Y.Z` / version H1, **no** leading `## 中文`. After the Chinese categories, use `## English` then the English summary. Put the product+version only on the GitHub Release / tag title when shipping.
+4. Write **two modules**: **English first**, then **中文**. Same structure and coverage; do not leave one language thinner without reason. Chinese category headings must stay Chinese—never mirror English `Feat`/`Fix` into the 中文 block.
+5. **Body opening**: start with the English summary paragraph—**no** `# Project vX.Y.Z` / version H1, **no** leading `## English`. After the English categories, use `## 中文` then the Chinese summary. Put the product+version only on the GitHub Release / tag title when shipping.
 6. Format baseline: see [references/note-format.md](references/note-format.md)—defer to step 3 when history conflicts with the guide (except body-opening rules above, which always apply).
 
 Output default: paste the full note in the reply for human review.  
@@ -137,7 +137,7 @@ gh release edit  "vX.Y.Z" --notes-file combined.md
 
 Rules:
 
-- Hand-written body stays free of version H1 and leading `## 中文` (see note-format).
+- Hand-written body stays free of version H1 and leading `## English` (see note-format).
 - If the body **already** contains `## What's Changed`, do not append a second copy; regenerate and replace the trailer only when refreshing.
 - After any substantive edit to the published note, **re-run generate-notes and re-attach** (or `release edit`) so the trailer stays present and current.
 - Auto notes are PR-oriented; they do not replace the bilingual product summary—they sit **after** it.
@@ -148,7 +148,7 @@ Rules:
 - One bullet = one change cluster, not one file.
 - Prefer product/operator language (what changed for users) over internal ticket or process noise; ids only as optional secondary detail.
 - Do not overclaim readiness, security, or compatibility beyond what commits and project docs support.
-- Match user’s language for the surrounding reply; notes themselves are always **zh then en**.
+- Match user’s language for the surrounding reply; notes themselves are always **en then zh**.
 - No secrets, tokens, or host paths in notes.
 
 ## Tiny example (structure only)
@@ -156,20 +156,7 @@ Rules:
 Release title (outside body): `BORA v0.1.0`
 
 ```markdown
-本版本首次打包公开入口……（正文第一段直接是中文 summary）
-
-### 新功能
-
-- **配置锁定**: 提供 `bora lock` 生成可复现摘要。基于 Config Core 的 load_and_lock。
-- **单次运行**: 提供 `bora run` 前台 Attempt 竖切。含独立 evaluator 与 fail-closed 离线路径。
-
-### 修复
-
-- **进程清理**: 修复 writer-stop 确认与 residual 进程组清理。避免 Attempt 结束后残留子进程。
-
-## English
-
-First packaged public surface… (one summary paragraph)
+First packaged public surface… (body opens with English summary; no version H1)
 
 ### Feat
 
@@ -179,4 +166,17 @@ First packaged public surface… (one summary paragraph)
 ### Fix
 
 - **Process cleanup**: Fix writer-stop confirmation and residual process-group teardown. Prevents leftover children after an Attempt.
+
+## 中文
+
+本版本首次打包公开入口……（一段中文 summary）
+
+### 新功能
+
+- **配置锁定**: 提供 `bora lock` 生成可复现摘要。基于 Config Core 的 load_and_lock。
+- **单次运行**: 提供 `bora run` 前台 Attempt 竖切。含独立 evaluator 与 fail-closed 离线路径。
+
+### 修复
+
+- **进程清理**: 修复 writer-stop 确认与 residual 进程组清理。避免 Attempt 结束后残留子进程。
 ```
