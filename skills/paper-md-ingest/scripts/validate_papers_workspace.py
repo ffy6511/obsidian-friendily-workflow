@@ -2,8 +2,10 @@
 """Validate an Obsidian-friendly papers workspace."""
 
 import argparse
+import concurrent.futures
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -176,25 +178,79 @@ def check_markdown_links(path, text, vault_root, papers_root, stem_index, issues
             check_fragment(resolved, fragment, path, issues)
 
 
-def check_markdown_images(path, text, check_remote_images, image_cache, issues):
+def collect_image_urls(path, text, check_remote_images, url_to_paths, issues):
+    """Phase 1: flag local errors immediately and record each unique (url, path) pair.
+
+    Same-image repeats within one file are de-duplicated so a single file never
+    emits duplicate issues for the same URL.
+    """
     body = strip_fenced_code(text)
+    seen_in_file = set()
     for match in MD_IMAGE_RE.finditer(body):
         raw_target = md_link_target(match.group(1))
         if not raw_target.startswith("https://"):
             issues.append(Issue("error", path, f"reading-note image must use a public https URL: {raw_target}"))
             continue
-        if not check_remote_images or raw_target in image_cache:
+        if not check_remote_images:
             continue
+        if raw_target in seen_in_file:
+            continue
+        seen_in_file.add(raw_target)
+        url_to_paths.setdefault(raw_target, []).append(path)
+
+
+def fetch_image_url(raw_target, max_attempts=3):
+    """Phase 2 worker: return (url, content_type, error). Exactly one URL per call.
+
+    Retries up to ``max_attempts`` times with a short backoff. Parallel workers
+    against a single host (notably arxiv.org) can trip transient TLS resets and
+    EOF errors that a second attempt almost always clears, so we treat any
+    URLError/TimeoutError as retryable rather than surfacing the noise.
+    """
+    request = urllib.request.Request(raw_target, headers={"User-Agent": "paper-md-ingest-validator/0.1"})
+    last_error = None
+    for attempt in range(max_attempts):
         try:
-            request = urllib.request.Request(raw_target, headers={"User-Agent": "paper-md-ingest-validator/0.1"})
             with urllib.request.urlopen(request, timeout=20) as response:
                 content_type = response.headers.get("content-type", "").lower()
                 response.read(1)
-            image_cache[raw_target] = content_type
-            if not content_type.startswith("image/"):
-                issues.append(Issue("error", path, f"remote image is not image/* ({content_type or 'missing content type'}): {raw_target}"))
+            return (raw_target, content_type, None)
         except (urllib.error.URLError, TimeoutError, ValueError) as error:
-            issues.append(Issue("error", path, f"remote image check failed: {raw_target} ({error})"))
+            last_error = error
+            if attempt < max_attempts - 1:
+                time.sleep(0.5 * (attempt + 1))
+    return (raw_target, None, last_error)
+
+
+def prefetch_remote_images(url_to_paths, image_cache, image_errors, max_workers):
+    """Phase 2: fetch every pending URL in parallel, caching both successes and failures.
+
+    Caching failures too avoids re-hitting a broken URL once per file that
+    references it (the old serial behavior retried failures on every encounter).
+    """
+    pending = [url for url in url_to_paths if url not in image_cache and url not in image_errors]
+    if not pending:
+        return
+    workers = max(1, min(max_workers, len(pending)))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        for url, content_type, error in executor.map(fetch_image_url, pending):
+            if error is not None:
+                image_errors[url] = error
+            else:
+                image_cache[url] = content_type
+
+
+def report_image_issues(url_to_paths, image_cache, image_errors, issues):
+    """Phase 3: emit per-file issues from the shared fetch results."""
+    for url, paths in url_to_paths.items():
+        if url in image_cache:
+            content_type = image_cache[url]
+            if not content_type.startswith("image/"):
+                for path in paths:
+                    issues.append(Issue("error", path, f"remote image is not image/* ({content_type or 'missing content type'}): {url}"))
+        elif url in image_errors:
+            for path in paths:
+                issues.append(Issue("error", path, f"remote image check failed: {url} ({image_errors[url]})"))
 
 
 def check_wikilinks(path, text, vault_root, papers_root, stem_index, issues):
@@ -253,13 +309,27 @@ def check_inventory(papers_root, issues):
             issues.append(Issue("error", papers_md, f"library item not indexed: {paper_dir.name}"))
 
 
-def validate(papers_root, check_remote_images=False):
+def validate(papers_root, check_remote_images=False, image_workers=16, files=None):
     papers_root = papers_root.resolve()
     vault_root = papers_root.parent
     issues = []
-    markdown_files = sorted(p.resolve() for p in papers_root.rglob("*.md"))
-    stem_index = build_stem_index(markdown_files)
+    all_markdown_files = sorted(p.resolve() for p in papers_root.rglob("*.md"))
+    # stem_index is always built from the WHOLE library so that wikilinks /
+    # markdown links inside an incrementally-checked file can still resolve to
+    # targets the caller did not list.
+    stem_index = build_stem_index(all_markdown_files)
     image_cache = {}
+    image_errors = {}
+    url_to_paths = {}
+
+    if files:
+        wanted = {Path(f).resolve() for f in files}
+        markdown_files = [p for p in all_markdown_files if p in wanted]
+        resolved_set = set(markdown_files)
+        for missing in sorted(str(p) for p in wanted if p not in resolved_set):
+            issues.append(Issue("error", Path(missing), "file not found under papers-root"))
+    else:
+        markdown_files = all_markdown_files
 
     check_library(papers_root, issues)
     check_inventory(papers_root, issues)
@@ -268,8 +338,11 @@ def validate(papers_root, check_remote_images=False):
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         check_markdown_links(path, text, vault_root, papers_root, stem_index, issues)
-        check_markdown_images(path, text, check_remote_images, image_cache, issues)
+        collect_image_urls(path, text, check_remote_images, url_to_paths, issues)
         check_wikilinks(path, text, vault_root, papers_root, stem_index, issues)
+    if check_remote_images and url_to_paths:
+        prefetch_remote_images(url_to_paths, image_cache, image_errors, image_workers)
+        report_image_issues(url_to_paths, image_cache, image_errors, issues)
     return issues
 
 
@@ -277,10 +350,22 @@ def main():
     parser = argparse.ArgumentParser(description="Validate papers workspace links and required files.")
     parser.add_argument("--papers-root", default="papers", help="Path to the papers workspace")
     parser.add_argument("--check-remote-images", action="store_true", help="Fetch reading-note images and require image/* responses")
+    parser.add_argument("--image-workers", type=int, default=16, help="Parallel workers for remote image checks (default: 16)")
+    parser.add_argument("--files", nargs="+", help=(
+        "Restrict per-file checks (markdown links, remote images, wikilinks) to these "
+        "files. Structural checks (library/, PAPERS.md inventory) still run over the "
+        "whole library. Paths are relative to the current working directory. Omit for a "
+        "full-library sweep."
+    ))
     args = parser.parse_args()
 
     papers_root = Path(args.papers_root)
-    issues = validate(papers_root, check_remote_images=args.check_remote_images)
+    issues = validate(
+        papers_root,
+        check_remote_images=args.check_remote_images,
+        image_workers=args.image_workers,
+        files=args.files,
+    )
     errors = [issue for issue in issues if issue.severity == "error"]
     for issue in issues:
         print(f"{issue.severity.upper()}: {issue.path}: {issue.message}", file=sys.stderr)

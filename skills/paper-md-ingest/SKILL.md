@@ -122,6 +122,15 @@ When a run adds or changes reading-note figures, also run the network-backed che
 "$PY" "$PAPER_MD_INGEST_DIR/scripts/validate_papers_workspace.py" --papers-root "$ROOT" --check-remote-images
 ```
 
+For fast incremental verification after editing only a few files (e.g. a reading note, a topic index, and `PAPERS.md`), pass `--files` so the per-file checks (markdown links, remote images, wikilinks) run only on those files. Structural checks (`library/` integrity, `PAPERS.md` inventory coverage) still run over the whole library, and wikilink targets resolve against the whole-library stem index, so cross-file integrity is preserved. This turns a full-library image sweep into a sub-second check:
+
+```bash
+"$PY" "$PAPER_MD_INGEST_DIR/scripts/validate_papers_workspace.py" --papers-root "$ROOT" --check-remote-images \
+  --files "papers/library/<paper-id>/<note>.md" "papers/topics/<topic>.md" "papers/PAPERS.md"
+```
+
+Remote image checks run in parallel (`--image-workers`, default 16) and retry transient TLS errors, so full-library sweeps stay practical when you do need them.
+
 Manifest schema:
 
 ```json
