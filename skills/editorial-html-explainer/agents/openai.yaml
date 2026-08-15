@@ -1,0 +1,7 @@
+interface:
+  display_name: "Editorial HTML Explainer"
+  short_description: "Stone/IKB long-form HTML explainer"
+  default_prompt: "Use $editorial-html-explainer to write a long-form visual HTML explainer of <topic>."
+
+policy:
+  allow_implicit_invocation: false

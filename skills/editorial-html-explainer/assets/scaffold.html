@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ikb: { DEFAULT: "#002FA7", bright: "#5B7BFF", ink: "#071033" },
+            },
+            fontFamily: {
+              serif: ['"Iowan Old Style"', "Palatino", "Georgia", "serif"],
+              sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+              mono: ['"Maple Mono CN"', '"Maple Mono"', '"Maple Mono NF"', "ui-monospace", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "neutral",
+        securityLevel: "loose",
+        flowchart: { curve: "basis", padding: 12 },
+      });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/bash.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("pre code[class*='language-']").forEach((el) => {
+          hljs.highlightElement(el);
+        });
+      });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .ikb-deep { background: linear-gradient(135deg, #071033, #002FA7); }
+      code, pre, .hljs, kbd, samp {
+        font-family: "Maple Mono CN", "Maple Mono", "Maple Mono NF", ui-monospace, monospace !important;
+        font-feature-settings: "ss01", "cv11";
+        font-variant-ligatures: contextual;
+      }
+      pre code.hljs {
+        background: transparent;
+        padding: 0;
+        font-size: 13px;
+        line-height: 1.65;
+        color: #e2e8f0;
+      }
+      .hljs-keyword, .hljs-selector-tag { color: #93c5fd; }
+      .hljs-string, .hljs-attr { color: #86efac; }
+      .hljs-number, .hljs-literal { color: #fcd34d; }
+      .hljs-comment { color: #94a3b8; font-style: italic; }
+      .hljs-title, .hljs-title.function_, .hljs-built_in { color: #7dd3fc; }
+      .hljs-params, .hljs-variable, .hljs-template-variable { color: #e2e8f0; }
+      .hljs-type, .hljs-class .hljs-title { color: #c4b5fd; }
+      .hljs-meta, .hljs-meta .hljs-keyword { color: #fda4af; }
+      .hljs-symbol, .hljs-bullet { color: #5B7BFF; }
+      .mermaid svg { max-width: 100%; height: auto; }
+      html { scroll-behavior: smooth; }
+      [id] { scroll-margin-top: 1.25rem; }
+      .toc a { text-underline-offset: 3px; }
+      .toc a:hover { color: #002FA7; }
+      .toc-rail a {
+        display: block;
+        border-left: 2px solid #e7e5e4;
+        padding: 0.28rem 0 0.28rem 0.75rem;
+        color: #737373;
+        text-decoration: none;
+        line-height: 1.35;
+      }
+      .toc-rail a:hover { color: #002FA7; border-left-color: #94a3b8; }
+      .toc-rail a.is-active {
+        color: #002FA7;
+        border-left-color: #002FA7;
+        font-weight: 600;
+      }
+      .toc-rail .toc-sub a { padding-left: 1.35rem; font-size: 12px; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans antialiased">
+    <main class="mx-auto w-full max-w-5xl px-6 py-12 space-y-16">
+      <header class="space-y-6">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="font-mono text-xs uppercase tracking-widest text-slate-500">{{kicker}}</p>
+            <h1 class="mt-2 font-serif text-4xl leading-tight tracking-tight text-slate-900">{{title}}</h1>
+            <p class="mt-3 max-w-2xl text-lg text-slate-600">{{lede}}</p>
+          </div>
+          <p class="font-mono text-xs uppercase tracking-wider text-slate-400">{{date}}</p>
+        </div>
+        <nav class="toc flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-200 pt-4 font-mono text-sm text-slate-600 2xl:hidden">
+          <a href="#sec-1" class="underline decoration-slate-300">01</a>
+          <a href="#sec-2" class="underline decoration-slate-300">02</a>
+        </nav>
+      </header>
+
+      <section id="sec-1" class="space-y-10">
+        <header class="space-y-3">
+          <p class="font-mono text-xs uppercase tracking-widest text-ikb">01</p>
+          <h2 class="font-serif text-3xl text-slate-900">{{section}}</h2>
+          <p class="max-w-3xl text-slate-700 leading-relaxed">{{prose}}</p>
+        </header>
+      </section>
+    </main>
+
+    <aside class="pointer-events-none fixed inset-y-0 right-0 z-20 hidden w-56 pr-6 pt-12 2xl:block">
+      <nav class="toc-rail pointer-events-auto sticky top-8 ml-auto w-44 text-[13px]" aria-label="本页目录">
+        <p class="mb-3 font-mono text-[11px] uppercase tracking-widest text-slate-400">本页</p>
+        <a href="#sec-1">01 · {{section}}</a>
+      </nav>
+    </aside>
+
+    <script>
+      (function () {
+        const links = Array.from(document.querySelectorAll(".toc-rail a"));
+        if (!links.length) return;
+        const items = links
+          .map((a) => {
+            const id = (a.getAttribute("href") || "").slice(1);
+            const el = document.getElementById(id);
+            return el ? { a, el } : null;
+          })
+          .filter(Boolean);
+        const visible = new Set();
+        const paint = () => {
+          let current = items[0];
+          for (const item of items) {
+            if (visible.has(item.el)) current = item;
+          }
+          links.forEach((a) => a.classList.toggle("is-active", a === current.a));
+        };
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) visible.add(e.target);
+              else visible.delete(e.target);
+            });
+            paint();
+          },
+          { rootMargin: "-12% 0px -72% 0px", threshold: 0 }
+        );
+        items.forEach(({ el }) => io.observe(el));
+        paint();
+      })();
+    </script>
+  </body>
+</html>
