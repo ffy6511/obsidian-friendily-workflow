@@ -84,7 +84,8 @@ Include only **user-visible** or **operator-visible** change. Drop pure chore no
    Align register, density, heading/bullet shape, and bilingual layout with that history. The format guide is a **fallback** when there is no prior package note (first release) or history is unusable.
 4. Write **two modules**: **English first**, then **中文**. Same structure and coverage; do not leave one language thinner without reason. Chinese category headings must stay Chinese—never mirror English `Feat`/`Fix` into the 中文 block.
 5. **Body opening**: start with the English summary paragraph—**no** `# Project vX.Y.Z` / version H1, **no** leading `## English`. After the English categories, use `## 中文` then the Chinese summary. Put the product+version only on the GitHub Release / tag title when shipping.
-6. Format baseline: see [references/note-format.md](references/note-format.md)—defer to step 3 when history conflicts with the guide (except body-opening rules above, which always apply).
+6. **Summary names this version only**: both opening paragraphs state **this** release’s capabilities and limits. Do **not** frame them as “on top of / 叠在 / builds on **previous version** …”. The previous tag is the git baseline, not a sentence in the summary. Do not copy that framing even if an older note used it.
+7. Format baseline: see [references/note-format.md](references/note-format.md)—defer to step 3 when history conflicts with the guide (except body-opening and summary-framing rules above, which always apply).
 
 Output default: paste the full note in the reply for human review.  
 Only write a file (e.g. `RELEASE_NOTES.md`, `CHANGELOG` fragment) if the user asks.
@@ -145,6 +146,7 @@ Rules:
 ## Quality rules
 
 - Accuracy over marketing tone; no “completely rewritten” fluff.
+- Opening summaries describe this version; they do not recap or sit “on top of” the previous version number.
 - One bullet = one change cluster, not one file.
 - Prefer product/operator language (what changed for users) over internal ticket or process noise; ids only as optional secondary detail.
 - Do not overclaim readiness, security, or compatibility beyond what commits and project docs support.

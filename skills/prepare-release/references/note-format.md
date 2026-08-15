@@ -48,13 +48,18 @@ Two modules in order: **English**, then **中文**. Same facts; natural phrasing
 
 - First non-empty line of the body = English summary paragraph.
 - No `#` / `##` version title, no `## English` before that paragraph.
-- Version numbers may appear **inside** prose when useful; do not restate the release title as a heading.
+- Do not restate the release title as a heading.
+- Version numbers may appear **inside later prose or bullets** when a migration or rename needs them. They do **not** belong in the opening summary as a “since last version” frame.
 
 ### Summary paragraph
 
 - English: document open — **no** heading above it, **no** “Overview” label.
 - Chinese: immediately under `## 中文` — still **no** extra title inside the paragraph.
-- 2–5 sentences (or one dense paragraph): who this release is for, headline capabilities, and hard limits / non-goals if material.
+- 2–5 sentences (or one dense paragraph): this version’s headline capabilities, and hard limits / non-goals if material.
+- Write **this** release’s traits directly. Do **not** open by naming the previous package version or saying the work sits on top of it.
+- Bad: `This release is the Hub / Viewer operator slice on top of **0.5.0 mechanism plugins**. …` / `本版本叠在 **0.5.0 机制插件** 之上，补齐…`
+- Good: start at the capability (`Datasets get a git-like **draft slot**…` / `Dataset 按 **draft 槽 + 不可变 release** 维护。…`)
+- Do not copy an older note’s “builds on / 叠在 vX.Y.Z 之上” opener even when matching historical voice.
 - Do not bullet the summary.
 
 ### Language modules
