@@ -8,7 +8,7 @@ Copy [../assets/scaffold.html](../assets/scaffold.html) and keep these decisions
 | --- | --- |
 | Page | `bg-stone-50 text-slate-900` |
 | Accent (IKB) | `#002FA7` · dark-bg lift `#5B7BFF` · ink `#071033` |
-| Deep fill | `#0f172a` → `#1e293b`, or `.ikb-deep` `#071033` → `#002FA7` |
+| Deep fill | solid `#0f172a` (`.deep`) — no gradient |
 | Leak | `#dc2626` |
 | Warn | amber-50 / amber-200 |
 | Serif (h1/h2/h3) | Iowan Old Style, Palatino, Georgia |
@@ -40,7 +40,7 @@ body
 1. **Header** — kicker / title / lede. No second introduction.
 2. **Opening map** — one figure that names the whole, then 2–4 one-line role cards (owner / not-owner / red line).
 3. **Numbered sections** (`01` `02` `03`) — each: one lede → visual → real code or table. Distinguish colliding terms the first time they appear.
-4. **Close** — three takeaway cards, then an `.ikb-deep` banner (one sentence), then a mono sources line (`事实来源：path · path`). No issue numbers.
+4. **Close** — three takeaway cards, then a one-sentence close in the same page ink (no fill, no gradient), then a mono sources line (`事实来源：path · path`). No issue numbers.
 
 ## Right TOC
 
@@ -96,4 +96,4 @@ Rules:
 
 ## Colour use
 
-One accent (IKB) + red leak + amber warn. No extra brand palette. Dark hero blocks are rare (closing banner is enough).
+One accent (IKB) + red leak + amber warn. No extra brand palette. No gradient fills. No dark hero / closing splash.

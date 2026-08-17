@@ -49,4 +49,4 @@ QA, then tell the user the absolute path. Fix failures in the same turn.
 - Every rail/header TOC href has an `id`. Highlight.js never touches `pre.mermaid`.
 - Code blocks have `language-*`, a path figcaption, and escaped `>` / `<`.
 - No mass / state row parked in a half-width column. No 10px uppercase Chinese.
-- Opening map + numbered sections + closing banner are all present unless the user asked for a different spine.
+- Opening map + numbered sections + a one-sentence close are all present unless the user asked for a different spine.
