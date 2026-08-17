@@ -1,0 +1,7 @@
+interface:
+  display_name: 'Trim and Deepen'
+  short_description: 'Trim recent diffs; note architecture deepening'
+  default_prompt: 'Use $trim-and-deepen to trim redundant and overly defensive code from the latest batch of changes, and write notes for any architecture deepening.'
+
+policy:
+  allow_implicit_invocation: false
