@@ -1,0 +1,4 @@
+interface:
+  display_name: "File GitHub Issue"
+  short_description: "Turn a plan into a self-contained English GitHub issue"
+  default_prompt: "Use $file-github-issue: file an English issue for <problem + agreed approach>"

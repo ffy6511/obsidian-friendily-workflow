@@ -36,6 +36,7 @@
 | Skill | 用途 |
 | --- | --- |
 | [`as-far-as-i-know`](skills/as-far-as-i-know/SKILL.md) | 用户写当前理解；agent 先给结论（共识 / 部分共识 / 未达成共识 / 证据不足），再给**仓库/文档/代码**论据。不客套附和。 |
+| [`file-github-issue`](skills/file-github-issue/SKILL.md) | 把已对齐的问题与方案写成公开 GitHub issue（默认英文、只用仓库已有 label），后续 agent 只读 issue 即可开工。 |
 | [`as-the-field-knows`](skills/as-the-field-knows/SKILL.md) | 用户写观点；agent 先搜索开源/业界流行实现，再给结论（主流对齐 / 部分对齐 / 偏离主流 / 领域分裂 / 证据不足）与搜索论据。默认不用 subagent。 |
 | [`spec-driven-delivery`](skills/spec-driven-delivery/SKILL.md) | 快节奏 SDD：短 Spec + 用户故事/验收；执行时按 Phase 提交（对齐 staged-commit-message）；中途对抗审查默认关，收尾默认 subagent 查验收与代码质量并改。 |
 | [`staged-commit-message`](skills/staged-commit-message/SKILL.md) | 按 staged diff + 近期 commit 文风写 Conventional Commit。默认一条；意图能分开时（或用户要求时）拆多条，写入 `COMMIT.md`。只有用户明确说「提交」才 `git commit`。 |
