@@ -1,0 +1,8 @@
+interface:
+  display_name: "Issue Worktree PR"
+  short_description: "Deliver an issue on a worktree, then draft a PR"
+  default_prompt: "Use $issue-worktree-pr: deliver #<n> from main on a new worktree through a draft PR"
+
+policy:
+  allow_implicit_invocation: false
+
