@@ -15,6 +15,14 @@ Pick the pattern that carries the point. Mix Mermaid and hand-built. If a diagra
 
 Wrap Mermaid in `div.rounded-lg.border.border-slate-200.bg-white.p-5` + `<pre class="mermaid">`. Never put `language-*` on that pre.
 
+**Click to zoom** is in [../assets/scaffold.html](../assets/scaffold.html): after `mermaid.run`, each diagram is clickable; a dialog clones the SVG with `+/-` / `0` / `Esc` / backdrop close. Same idea as `website/src/components/mermaid.tsx`. Copy that CSS + JS when you copy the scaffold. Do not invent a second overlay.
+
+**Mermaid syntax that breaks (shows “Syntax error in text”):**
+
+- `sequenceDiagram` aliases with `.` or `/` — `participant A as attempt.py` fails. Quote it (`as "attempt.py"`) or drop the extension.
+- Message text with `()` — `run(ctx)` / `attach_stdio(pi-acp)` fails. Write `run` / `attach_stdio`.
+- Prefer `flowchart` when a sequence is just “who calls whom”. Render **each** `.mermaid` node in its own `try/catch` so one bad chart does not skip the lightbox bind.
+
 Mass columns and horizontal state rows are **full width**. Do not park them in one half of a two-column grid next to another figure.
 
 ```mermaid

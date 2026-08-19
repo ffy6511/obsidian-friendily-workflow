@@ -24,11 +24,19 @@
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
       mermaid.initialize({
-        startOnLoad: true,
+        startOnLoad: false,
         theme: "neutral",
         securityLevel: "loose",
         flowchart: { curve: "basis", padding: 12 },
       });
+      for (const el of document.querySelectorAll(".mermaid")) {
+        try {
+          await mermaid.run({ nodes: [el] });
+        } catch (err) {
+          console.error("mermaid render failed", err);
+        }
+      }
+      window.__bindMermaidLightbox?.();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -77,6 +85,75 @@
       .hljs-meta, .hljs-meta .hljs-keyword { color: #fda4af; }
       .hljs-symbol, .hljs-bullet { color: #5B7BFF; }
       .mermaid svg { max-width: 100%; height: auto; }
+      .mermaid { cursor: zoom-in; }
+      .diagram-lb {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: none;
+        flex-direction: column;
+        background: rgb(15 23 42 / 0.45);
+        backdrop-filter: blur(4px);
+      }
+      .diagram-lb.is-open { display: flex; }
+      .diagram-lb-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        border-bottom: 1px solid #e7e5e4;
+        background: #fff;
+        padding: 0.5rem 0.75rem;
+      }
+      .diagram-lb-bar .group { display: flex; align-items: center; gap: 0.25rem; }
+      .diagram-lb-pct {
+        min-width: 3.5rem;
+        text-align: center;
+        font-family: "Maple Mono CN", "Maple Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: #737373;
+      }
+      .diagram-lb-btn {
+        display: inline-flex;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 0.375rem;
+        background: transparent;
+        color: #57534e;
+        cursor: pointer;
+      }
+      .diagram-lb-btn:hover { background: #f5f5f4; color: #1c1917; }
+      .diagram-lb-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+      .diagram-lb-btn:focus-visible { outline: 2px solid #002FA7; }
+      .diagram-lb-stage { position: relative; flex: 1; overflow: auto; }
+      .diagram-lb-pad { display: flex; min-height: 100%; min-width: 100%; padding: 1.5rem; }
+      .diagram-lb-card {
+        margin: auto;
+        flex-shrink: 0;
+        border: 1px solid #e7e5e4;
+        border-radius: 0.5rem;
+        background: #fff;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgb(15 23 42 / 0.12);
+      }
+      .diagram-lb-card svg { width: 100%; height: auto; max-width: none; }
+      .diagram-lb-hint {
+        pointer-events: none;
+        position: absolute;
+        bottom: 0.75rem;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 1px solid #e7e5e4;
+        border-radius: 9999px;
+        background: #fff;
+        padding: 0.25rem 0.75rem;
+        font-family: "Maple Mono CN", "Maple Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: #737373;
+      }
       html { scroll-behavior: smooth; }
       [id] { scroll-margin-top: 1.25rem; }
       .toc a { text-underline-offset: 3px; }
@@ -162,6 +239,109 @@
         );
         items.forEach(({ el }) => io.observe(el));
         paint();
+      })();
+    </script>
+    <script>
+      (function () {
+        const MIN = 0.25, MAX = 4, STEP = 0.25;
+        const icon = (d) =>
+          `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+        const I = {
+          minus: icon('<circle cx="11" cy="11" r="8"/><path d="M8 11h6"/><path d="m21 21-4.3-4.3"/>'),
+          plus: icon('<circle cx="11" cy="11" r="8"/><path d="M11 8v6"/><path d="M8 11h6"/><path d="m21 21-4.3-4.3"/>'),
+          reset: icon('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>'),
+          x: icon('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+        };
+        let scale = 1, lastFocus = null, lb, card, pct, btnOut, btnIn, btnReset;
+        function setScale(next) {
+          scale = Math.min(MAX, Math.max(MIN, next));
+          card.style.width = `${100 * scale}%`;
+          pct.textContent = `${Math.round(scale * 100)}%`;
+          btnOut.disabled = scale <= MIN;
+          btnIn.disabled = scale >= MAX;
+          btnReset.disabled = scale === 1;
+        }
+        function close() {
+          lb.classList.remove("is-open");
+          document.body.style.overflow = "";
+          setScale(1);
+          lastFocus?.focus();
+        }
+        function open(svgHtml) {
+          lastFocus = document.activeElement;
+          card.innerHTML = svgHtml;
+          setScale(1);
+          lb.classList.add("is-open");
+          document.body.style.overflow = "hidden";
+          lb.querySelector("[data-close]").focus();
+        }
+        function mountLightbox() {
+          lb = document.createElement("div");
+          lb.className = "diagram-lb";
+          lb.setAttribute("role", "dialog");
+          lb.setAttribute("aria-modal", "true");
+          lb.setAttribute("aria-label", "放大查看图");
+          lb.innerHTML = `
+            <div class="diagram-lb-bar">
+              <div class="group">
+                <button type="button" class="diagram-lb-btn" data-zoom-out aria-label="缩小" title="缩小">${I.minus}</button>
+                <span class="diagram-lb-pct" aria-live="polite">100%</span>
+                <button type="button" class="diagram-lb-btn" data-zoom-in aria-label="放大" title="放大">${I.plus}</button>
+                <button type="button" class="diagram-lb-btn" data-reset aria-label="重置缩放" title="重置缩放">${I.reset}</button>
+              </div>
+              <button type="button" class="diagram-lb-btn" data-close aria-label="关闭" title="关闭">${I.x}</button>
+            </div>
+            <div class="diagram-lb-stage" data-stage>
+              <div class="diagram-lb-pad" data-stage>
+                <div class="diagram-lb-card" data-card></div>
+              </div>
+              <div class="diagram-lb-hint">滚动查看 · Esc 关闭 · +/- 缩放</div>
+            </div>`;
+          document.body.appendChild(lb);
+          card = lb.querySelector("[data-card]");
+          pct = lb.querySelector(".diagram-lb-pct");
+          btnOut = lb.querySelector("[data-zoom-out]");
+          btnIn = lb.querySelector("[data-zoom-in]");
+          btnReset = lb.querySelector("[data-reset]");
+          lb.querySelector("[data-close]").addEventListener("click", close);
+          btnOut.addEventListener("click", () => setScale(scale - STEP));
+          btnIn.addEventListener("click", () => setScale(scale + STEP));
+          btnReset.addEventListener("click", () => setScale(1));
+          lb.querySelectorAll("[data-stage]").forEach((el) => {
+            el.addEventListener("click", (e) => {
+              if (e.target === el) close();
+            });
+          });
+          window.addEventListener("keydown", (e) => {
+            if (!lb.classList.contains("is-open")) return;
+            if (e.key === "Escape") { e.preventDefault(); close(); }
+            else if (e.key === "+" || e.key === "=") { e.preventDefault(); setScale(scale + STEP); }
+            else if (e.key === "-" || e.key === "_") { e.preventDefault(); setScale(scale - STEP); }
+            else if (e.key === "0") { e.preventDefault(); setScale(1); }
+          });
+        }
+        window.__bindMermaidLightbox = function () {
+          if (!lb) mountLightbox();
+          document.querySelectorAll(".mermaid").forEach((node) => {
+            node.setAttribute("title", "点击放大查看");
+            node.setAttribute("role", "button");
+            node.tabIndex = 0;
+            if (node.dataset.zoomBound) return;
+            node.dataset.zoomBound = "1";
+            const show = () => {
+              const svg = node.querySelector("svg");
+              if (svg) open(svg.outerHTML);
+            };
+            node.addEventListener("click", show);
+            node.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                show();
+              }
+            });
+          });
+        };
+        if (document.querySelector(".mermaid svg")) window.__bindMermaidLightbox();
       })();
     </script>
   </body>

@@ -78,7 +78,8 @@ Rules:
 ```
 
 - Languages: `python` / `yaml` / `bash` (load those highlight.js packs; add more only if the page needs them). CLI samples are `language-bash` too, even inside a numbered “how to use” list.
-- Highlight: `pre code[class*='language-']` only.
+- Highlight: `pre code[class*='language-']` only. Never highlight `pre.mermaid`.
+- Mermaid click-to-zoom: keep the lightbox CSS/JS from the scaffold. See [diagrams.md](diagrams.md).
 - Real files only. Figcaption = `repo/relative/path · why this snippet`. Truncate with `...`; escape `<` `>` as `&lt;` `&gt;`.
 - Pair related snippets in `lg:grid-cols-2`. A long function stays full width.
 - Inline `code` also uses the Maple stack (scaffold `code, pre, .hljs` rule).

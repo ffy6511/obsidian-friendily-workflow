@@ -29,7 +29,7 @@ Default output: a path the user named; else next to the topic files, not inside 
 - Single HTML file. Tailwind CDN + Mermaid 11 ESM + highlight.js 11. No app framework.
 - **Content stays centered** (`main.max-w-5xl.mx-auto`). TOC is `fixed` to the **viewport right**, shown only at `2xl+`. Never put TOC in the same flex/grid row as `main` — that shifts the article off-center.
 - Code: local **Maple Mono CN** stack; every block is `<pre><code class="language-…">`. Highlight only those nodes (leave `pre.mermaid` alone).
-- Diagrams: Mermaid for graphs/sequences; hand-built divs for mass, stacks, horizontal state rows. Mix them.
+- Diagrams: Mermaid for graphs/sequences; hand-built divs for mass, stacks, horizontal state rows. Mix them. Keep the scaffold mermaid **click-to-zoom lightbox** (website docs behaviour). Do not drop it.
 - Readable type. No `text-[10px] uppercase tracking-wider` on Chinese inside a narrow dark column.
 - Horizontal sequences are a row (overflow-x if needed), not a vertical `stateDiagram-v2`.
 - Open after write.
@@ -50,3 +50,4 @@ QA, then tell the user the absolute path. Fix failures in the same turn.
 - Code blocks have `language-*`, a path figcaption, and escaped `>` / `<`.
 - No mass / state row parked in a half-width column. No 10px uppercase Chinese.
 - Opening map + numbered sections + a one-sentence close are all present unless the user asked for a different spine.
+- Each `pre.mermaid` renders; click opens the fullscreen zoom lightbox (`Esc` / `+/-` / `0`). No leftover “Syntax error in text”.
