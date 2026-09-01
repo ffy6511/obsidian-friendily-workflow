@@ -1,0 +1,7 @@
+interface:
+  display_name: "Nightly Hardening"
+  short_description: "Night worktree pass: improve, commit, draft PR"
+  default_prompt: "Use $nightly-hardening to branch from the current checkout into a worktree, improve the repo tonight, phase-commit, and open a draft PR."
+
+policy:
+  allow_implicit_invocation: false

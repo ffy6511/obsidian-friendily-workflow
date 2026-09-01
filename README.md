@@ -39,6 +39,8 @@
 | [`file-github-issue`](skills/file-github-issue/SKILL.md) | 把已对齐的问题与方案写成公开 GitHub issue（默认英文、只用仓库已有 label），后续 agent 只读 issue 即可开工。 |
 | [`as-the-field-knows`](skills/as-the-field-knows/SKILL.md) | 用户写观点；agent 先搜索开源/业界流行实现，再给结论（主流对齐 / 部分对齐 / 偏离主流 / 领域分裂 / 证据不足）与搜索论据。默认不用 subagent。 |
 | [`spec-driven-delivery`](skills/spec-driven-delivery/SKILL.md) | 快节奏 SDD：短 Spec + 用户故事/验收；执行时按 Phase 提交（对齐 staged-commit-message）；中途对抗审查默认关，收尾默认 subagent 查验收与代码质量并改。 |
+| [`issue-worktree-pr`](skills/issue-worktree-pr/SKILL.md) | 从干净 `main` 开工作树，交付**一个** issue / 口头目标，分阶段提交后开到 `main` 的 draft PR。手动 `/issue-worktree-pr`。 |
+| [`nightly-hardening`](skills/nightly-hardening/SKILL.md) | 晚上从给定/当前分支开工作树自主改进：默认可做的 issue，或按 improve-codebase-architecture / trim-and-deepen 的启发做小范围硬化；分阶段提交，subagent 改质量，再开到**源分支**的 draft PR。默认直接动手；只有用户要审阅大纲才先停。 |
 | [`staged-commit-message`](skills/staged-commit-message/SKILL.md) | 按 staged diff + 近期 commit 文风写 Conventional Commit。默认一条；意图能分开时（或用户要求时）拆多条，写入 `COMMIT.md`。只有用户明确说「提交」才 `git commit`。 |
 | [`prepare-release`](skills/prepare-release/SKILL.md) | 发版准备：先核对/声明项目版本；默认只根据上次发版以来的提交起草中英双语 release note；只有用户明确说「直接发版 / ship」才 tag/发布。 |
 | [`trim-and-deepen`](skills/trim-and-deepen/SKILL.md) | 大批量改动之后：对刚动过的面直接砍冗余和极端防御；架构加深只写 proposed note，不自动改结构。手动 `/trim-and-deepen`。 |
