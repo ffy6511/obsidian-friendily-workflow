@@ -1,4 +1,6 @@
 interface:
-  display_name: "As Far As I Know"
-  short_description: "Judge user understanding vs ground truth"
-  default_prompt: "Use $as-far-as-i-know: as far as I know, <your understanding here>"
+  display_name: 'As Far As I Know'
+  short_description: 'Judge user understanding vs ground truth'
+  default_prompt: 'Use $as-far-as-i-know: as far as I know, <your understanding here>'
+policy:
+  allow_implicit_invocation: false

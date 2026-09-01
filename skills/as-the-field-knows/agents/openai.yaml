@@ -2,3 +2,5 @@ interface:
   display_name: 'As The Field Knows'
   short_description: 'Judge claim vs OSS and industry practice'
   default_prompt: 'Use $as-the-field-knows: 据业界 / as the field knows, <your claim here>'
+policy:
+  allow_implicit_invocation: false
