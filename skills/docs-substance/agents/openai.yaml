@@ -1,0 +1,6 @@
+interface:
+  display_name: "Docs Substance"
+  short_description: "Audit any doc: reader, jargon, right slot"
+  default_prompt: "Use $docs-substance to review this document: who is the reader, drop jargon they would not know, and put each claim in the right slot of the layout (highlights vs body vs omit)."
+policy:
+  allow_implicit_invocation: false
