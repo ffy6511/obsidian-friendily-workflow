@@ -49,7 +49,9 @@ Never invent changes. Prefer evidence from git over chat summary.
 | **Commit**                     | User asks to commit / 提交 / 分阶段提交 / “commit each phase” | Create local commit(s)                                        |
 | **Phase-during-work**          | Multi-slice implementation with staged commits requested      | After each phase completes: commit immediately, then continue |
 
-If the user only says “staged-commit-message” without “commit”, **draft only**.  
+If the user only says “staged-commit-message” without “commit”, **draft only**.
+If they said 不要直接提交 / 修改但是不要直接提交 / 可以修改相关文件但是不要直接提交, stay in **Draft**: keep editing, do not `git commit` until they say 提交 / commit.
+If they said `/staged-commit-message 拆分提交` / 拆分提交暂存区的修改, use **Recovery split** (same as split / 拆分 / multiple commits).  
 If they said “分阶段提交” / “过程中提交” / “commit as you go” earlier in the
 task, treat ongoing phase boundaries as **Commit** mode without re-asking.
 
