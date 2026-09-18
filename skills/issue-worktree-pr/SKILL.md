@@ -1,9 +1,10 @@
 ---
 name: issue-worktree-pr
 description: >
-  Deliver a GitHub issue or an oral goal from a clean main via a new branch
+  Deliver a GitHub issue or an oral goal from a clean $BASE (user-named
+  branch else main) via a new branch
   and git worktree: phase commits, optional trim, subagent acceptance, local
-  CI-equivalent, then a draft PR into main (English). Invoke with
+  CI-equivalent, then a draft PR into $BASE (English). Invoke with
   /issue-worktree-pr or $issue-worktree-pr. Manual only — do not auto-run on
   generic "implement this", "open a PR", or "work on #N" requests. Do not
   implement on a dirty primary checkout. Do not merge the PR.
@@ -12,7 +13,7 @@ disable-model-invocation: true
 
 # Issue worktree PR
 
-Turn **one** issue or oral goal into a **draft PR** against `main`, on an
+Turn **one** issue or oral goal into a **draft PR** against `$BASE`, on an
 isolated worktree. The originating chat is not the spec — the issue (or the
 user's written goal) is.
 
@@ -28,14 +29,14 @@ Companion skills (read when that step runs; do not copy their rules here):
 
 ## Defaults
 
-- Base: canonical `main` (or `master` if that is the default).
-- Isolation: **always** `git worktree add` + new branch. Never commit on the
+- Base: the branch the user named (e.g. canary); else canonical `main` (or `master` if that is the default). Call it `$BASE`.
+- Isolation: **always** `git worktree add` + new branch from `$UPSTREAM/$BASE`. Never commit on the
   caller's dirty primary tree.
 - Branch prefix from issue **kind**: `feat/` · `fix/` (Bug/Fix) · `docs/` ·
   `chore/`. Default `feat/` if unclear.
-- PR: `--draft`, `--base main`, **English** title and body. `Closes #N` only
+- PR: `--draft`, `--base "$BASE"`, **English** title and body. `gh pr create --draft --base "$BASE"` (same as nightly-hardening). `Closes #N` only
   when delivering a numbered issue.
-- Do not merge, tag, rebase-onto-main, or force-push.
+- Do not merge, tag, rebase-onto-base, or force-push.
 
 ## Workflow
 
@@ -51,12 +52,12 @@ Companion skills (read when that step runs; do not copy their rules here):
 Stop if the goal is two ownership areas with no sequencing. Ask once which
 increment to deliver, or split.
 
-### 2. Isolate from main
+### 2. Isolate from `$BASE`
 
 In the **existing** clone (read-only for this step):
 
 1. `git remote -v` + `gh repo view` → canonical remote `UPSTREAM`.
-2. `git fetch "$UPSTREAM" main` (or `master`).
+2. `git fetch "$UPSTREAM" "$BASE"`.
 3. Confirm the current checkout is **not** already this delivery worktree.
 4. Branch name: `<prefix>/<slug>` — slug from the issue title or goal, kebab,
    ASCII, ≤40 chars. Example: `#137` Feat → `feat/eval-network-reuse-attempt`.
@@ -66,7 +67,7 @@ In the **existing** clone (read-only for this step):
 ROOT=$(git rev-parse --show-toplevel)
 PARENT=$(dirname "$ROOT")
 NAME=$(basename "$ROOT")
-git worktree add -b "$BRANCH" "$PARENT/${NAME}-wt-${SLUG}" "$UPSTREAM/main"
+git worktree add -b "$BRANCH" "$PARENT/${NAME}-wt-${SLUG}" "$UPSTREAM/$BASE"
 ```
 
 If that path exists, stop and reuse or pick a new slug — do not clobber.
@@ -94,7 +95,7 @@ Do not implement everything and split commits at the end.
 ### 4. Trim (optional)
 
 If `$trim-and-deepen` is installed, run it on the **branch diff vs
-`$UPSTREAM/main`**. TRIM only (delete/collapse defensive redundancy). Do not
+`$UPSTREAM/$BASE`**. TRIM only (delete/collapse defensive redundancy). Do not
 run DEEPEN unless the user asked. Commit trim as its own `refactor` /
 `chore` phase if it is non-trivial.
 
@@ -105,7 +106,7 @@ If the skill is missing, skip. Do not invent a second trim procedure.
 Spawn **one** read-leaning subagent against this worktree. Give it:
 
 - Issue URL or the 5-line oral restatement
-- `git diff "$UPSTREAM/main"...HEAD` (and remaining uncommitted if any)
+- `git diff "$UPSTREAM/$BASE"...HEAD` (and remaining uncommitted if any)
 - Acceptance list from the issue
 
 Ask it to return: pass/fail per acceptance item, blocking vs follow-up
@@ -133,7 +134,7 @@ Failing CI-equivalent → fix in the worktree, do not open the PR.
 
 ```bash
 git push -u "$UPSTREAM" "$BRANCH"
-gh pr create --repo OWNER/REPO --draft --base main --head "$BRANCH" \
+gh pr create --repo OWNER/REPO --draft --base "$BASE" --head "$BRANCH" \
   --title "<type>(<scope>): <english subject>" \
   --body-file -
 ```
