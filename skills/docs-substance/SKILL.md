@@ -28,6 +28,7 @@ disable-model-invocation: true
 5. **词表。** 仓库已有检查就跑。要冻结再用 [references/glossary.md](references/glossary.md) 和 [scripts/check_banned_terms.py](scripts/check_banned_terms.py) 建。
 
 对照反例：[references/examples.md](references/examples.md)。需要时才读，不要一上来整份灌进上下文。
+做基本价值判断。删掉「轨迹完整，是不是就算通过？」「checks 不是 PASS」这类假问题。Provenance only — it does not change PASS or listing.
 
 ## 报告
 
