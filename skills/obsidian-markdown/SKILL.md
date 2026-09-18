@@ -95,7 +95,7 @@ In short: **essential + short → expanded; long or optional → collapsed.** Wh
 
 ### Formula and Complex-Concept Callouts
 
-Use an Obsidian-native `NOTE` callout immediately after a formula, special method, or complex concept when the explanation cannot fit in a one- or two-sentence footnote. Choose its default state by the expand/collapse principle above — do **not** collapse every formula callout by default:
+Default to in-paragraph prose after a formula, special method, or complex concept. Use an Obsidian-native `NOTE` callout only when the user asks for a callout. If a callout is used, choose its default state by the expand/collapse principle above — do **not** collapse every formula callout by default:
 
 - Expand by default (`> [!NOTE]+ 公式解释`) when the unpacking is essential to the surrounding paragraph and is not long.
 - Collapse by default (`> [!NOTE]- 公式解释`) when the explanation is content-heavy or supplementary, so the reader can skip the detail.
