@@ -14,6 +14,7 @@ description: >
 Write an issue a stranger-agent can execute from. The chat is not attached.
 
 Do **not** start implementation unless the user said to implement as well.
+If anything is unclear, call AskUserQuestion and wait before creating the issue.
 
 ## Defaults
 
