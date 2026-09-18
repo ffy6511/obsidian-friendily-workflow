@@ -153,17 +153,21 @@ Rules:
 - Match user’s language for the surrounding reply; notes themselves are always **en then zh**.
 - No secrets, tokens, or host paths in notes.
 
+## Local CI on HEAD (before ship)
+
+When the user asks whether **this HEAD** can pass CI, run this repo's documented local CI-equivalent (AGENTS.md / `.github/workflows/` path-filtered jobs). Do not answer from remote GitHub Actions.
+
 ## Tiny example (structure only)
 
-Release title (outside body): `BORA v0.1.0`
+Release title (outside body): `ageval vX.Y.Z`
 
 ```markdown
 First packaged public surface… (body opens with English summary; no version H1)
 
 ### Feat
 
-- **Config lock**: Ship `bora lock` for a reproducible package digest. Backed by Config Core load_and_lock.
-- **Single run**: Ship `bora run` for a foreground Attempt slice. Independent evaluator and offline fail-closed path.
+- **Config lock**: Ship `ageval lock` for a reproducible package digest. Backed by Config Core load_and_lock.
+- **Single run**: Ship `ageval run` for a foreground Attempt slice. Independent evaluator and offline fail-closed path.
 
 ### Fix
 
@@ -175,8 +179,8 @@ First packaged public surface… (body opens with English summary; no version H1
 
 ### 新功能
 
-- **配置锁定**: 提供 `bora lock` 生成可复现摘要。基于 Config Core 的 load_and_lock。
-- **单次运行**: 提供 `bora run` 前台 Attempt 竖切。含独立 evaluator 与 fail-closed 离线路径。
+- **配置锁定**: 提供 `ageval lock` 生成可复现摘要。基于 Config Core 的 load_and_lock。
+- **单次运行**: 提供 `ageval run` 前台 Attempt 竖切。含独立 evaluator 与 fail-closed 离线路径。
 
 ### 修复
 
