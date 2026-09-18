@@ -1,0 +1,6 @@
+interface:
+  display_name: "Writing Style"
+  short_description: "Flag jargon and overused not-but sentences"
+  default_prompt: "Use $writing-style on this Chinese draft: replace banned jargon, and keep 不是 X，而是 Y only when X is a real competing reading."
+policy:
+  allow_implicit_invocation: true

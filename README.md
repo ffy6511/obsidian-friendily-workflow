@@ -21,6 +21,8 @@
 | [`paper-md-ingest`](skills/paper-md-ingest/SKILL.md) | 论文 → `papers/`（含图表抽取） |
 | [`knowledge-radar-actions`](skills/knowledge-radar-actions/SKILL.md) | 雷达 digest 勾选后的 deep-read / 论文 / 学习单元 |
 | [`obsidian-public-sync`](skills/obsidian-public-sync/SKILL.md) | 私库笔记同步到公开 Quartz，保留路径和 wikilink 依赖 |
+| [`writing-style`](skills/writing-style/SKILL.md) | 中文黑话 +「不是 X，而是 Y」句式检测；词给替换，对比句评估 X 值不值得留；默认隐式启用 |
+
 
 适合：改 vault 笔记、建 map、ingest 论文或学习材料、处理雷达队列、同步公开站。
 

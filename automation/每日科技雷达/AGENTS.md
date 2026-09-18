@@ -49,3 +49,5 @@ Publishing eligibility should be represented with metadata, not by moving files 
 - Prefer concise section titles that describe the content below them.
 - When referencing images in Markdown notes, prefer publicly accessible image URLs by default. Store images locally only when the user explicitly asks or when the source is private, unstable, or unavailable via a durable public URL.
 - When the user requests to add a small concept, write it to the appropriate location in the form of a callout (closed by default). If the user explicitly requests to add a chapter to describe in detail, then use the title organization.
+- Chinese notes and docs: do not use bureaucratic or consulting jargon that is not ordinary vocabulary. After drafting, run `.agents/skills/writing-style/scripts/check_writing_style.py` on the text and apply the printed replacements. Do not wait for `$writing-style`.
+
