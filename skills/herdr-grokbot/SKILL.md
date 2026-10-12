@@ -2,7 +2,7 @@
 name: herdr-grokbot
 description: >
   用 herdr 让云端 Grok Bot 经用户批准的远程 shell 驱动本机编程 agent（默认 Grok Build /
-  `--kind grok`，也可按用户指定换成 codex、claude 等），覆盖工作区、启动、prompt、读输出、
+  `--kind grok`，也可按用户指定换成 codex、claude 等），覆盖同一 workspace 多 tab、启动、prompt、读输出、
   批准框；done/blocked 时用监听脚本把最后输出 POST 给 webhook routine 以唤醒 Grok Bot。
   在用户提到 herdr、本机 Grok Build、远程驱动 Codex/Claude、webhook 回调唤醒 Bot、或「在
   Mac 上跑 agent 再回消息」时使用。不要用于 Cursor Cloud Agent、未读屏幕就同意批准框，或把 webhook URL / Authorization 写进聊天。
@@ -57,7 +57,8 @@ flowchart LR
 ## 不要
 
 - 每次远程 shell 都要用户批准。
-- pane id 从 JSON 取（`workspace create` 的 `.result.root_pane.pane_id`，例如 `w9:p1`）。不要猜，不要按侧边栏顺序推。
+- pane id 从 JSON 取（`workspace create` / `tab create` 的 `.result.root_pane.pane_id`，例如 `w9:p1`）。不要猜，不要按侧边栏顺序推。
+- **多任务 / 多会话：同一 workspace（space）下开不同 tab，不要每个任务新建一个 workspace。** 一串 issue 并行时 workspace 会爆炸，难找也难关。
 - 批准框先 `agent read` 看命令，确认安全再 `send-keys … y`。
 - 批准框之外不要往输入框发字符。输错用 `ctrl+u` 清行。
 - 需要换模型时用该 agent 自己的 CLI 参数（放在 `--` 后），不要改用户全局配置。
@@ -80,11 +81,24 @@ launchctl submit -l dev.herdr.server -o /tmp/herdr-server.log -e /tmp/herdr-serv
 herdr agent list
 ```
 
-3. 建工作区。pane id 取 `.result.root_pane.pane_id`：
+3. **布局：优先同一 workspace 的不同 tab。** herdr 里 workspace ≈ 侧边栏的 space；tab 是 space 里的标签页。
+
+- **第一次**（或还没有合适的 workspace）：建一个 workspace，记下 `.result.workspace`（如 `w9`）和 `.result.root_pane.pane_id`：
 
 ```bash
-herdr workspace create --cwd <dir> --label <x> --no-focus
+herdr workspace list
+herdr workspace create --cwd <dir> --label <workspace-label> --no-focus
+# → .result.workspace / .result.tab / .result.root_pane.pane_id
 ```
+
+- **同一工作流里的第 2、第 3… 个任务 / 会话**：复用已有 workspace id，只加 tab（不要再 `workspace create`）：
+
+```bash
+herdr tab create --workspace <workspace-id> --cwd <dir> --label <task-label> --no-focus
+# → .result.tab / .result.root_pane.pane_id
+```
+
+约定：并行 issue（如 ageval `#251`/`#252`/`#255`）共用一个 workspace（例如 label `ageval-parallel`），每个 issue 一个 tab + 一个 agent 名（`gb251`、`gb252`…）。只有用户明确要求隔离、或 cwd/环境完全无关时，才新开 workspace。
 
 4. 启动本机 agent（默认 Grok Build）。原生参数必须放在 `--` 后面。`agent start` 要的是已有的空闲 shell pane，不会自己建 pane：
 
@@ -154,7 +168,8 @@ herdr 不会主动 webhook，所以这条回路用轮询。下列项可能仍未
 
 ## 操作要点（给执行这条 skill 的 Bot）
 
-1. 先确认本机 herdr server 活着（`herdr agent list`），再 create workspace / start。
-2. 默认 `--kind grok`、agent 名 `gb1`；用户点名其他栈时再改，并同步改 notify 脚本参数。
-3. 每条远程 shell 都走用户批准；批准框内容先 read 再决定是否 `y`。
-4. 任务结束后若用户已配 webhook，提醒本机保持 `grokbot-notify.sh` 在跑；未配则读屏后把摘要直接回给用户。
+1. 先确认本机 herdr server 活着（`herdr agent list`），再布局 / start。
+2. **多任务先 `workspace list`：有可复用的就 `tab create --workspace …`，没有才 `workspace create`。禁止「一个任务一个 workspace」。**
+3. 默认 `--kind grok`、agent 名 `gb1`（并行时用唯一名如 `gb251`）；用户点名其他栈时再改，并同步改 notify 脚本参数（可每 agent 一个 LaunchAgent）。
+4. 每条远程 shell 都走用户批准；批准框内容先 read 再决定是否 `y`。
+5. 任务结束后若用户已配 webhook，提醒本机保持 `grokbot-notify.sh` 在跑；未配则读屏后把摘要直接回给用户。
