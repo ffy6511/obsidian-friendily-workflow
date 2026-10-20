@@ -30,8 +30,7 @@ Companion skills (read when that step runs; do not copy their rules here):
 ## Defaults
 
 - Base: the branch the user named (e.g. canary); else canonical `main` (or `master` if that is the default). Call it `$BASE`.
-- Isolation: **always** `git worktree add` + new branch from `$UPSTREAM/$BASE`. Never commit on the
-  caller's dirty primary tree.
+- Isolation: **always** `git worktree add --no-track` + new branch from `$UPSTREAM/$BASE`. The new branch must not track `$BASE`. Never commit on the caller's dirty primary tree. Never bare-`git push`.
 - Branch prefix from issue **kind**: `feat/` · `fix/` (Bug/Fix) · `docs/` ·
   `chore/`. Default `feat/` if unclear.
 - PR: `--draft`, `--base "$BASE"`, **English** title and body. `gh pr create --draft --base "$BASE"` (same as nightly-hardening). `Closes #N` only
@@ -67,12 +66,30 @@ In the **existing** clone (read-only for this step):
 ROOT=$(git rev-parse --show-toplevel)
 PARENT=$(dirname "$ROOT")
 NAME=$(basename "$ROOT")
-git worktree add -b "$BRANCH" "$PARENT/${NAME}-wt-${SLUG}" "$UPSTREAM/$BASE"
+# --no-track is required. `git worktree add -b` defaults to --track when
+# the start point is a remote-tracking branch (`$UPSTREAM/$BASE`). That sets
+# branch.$BRANCH.merge to refs/heads/$BASE, so a later bare `git push`
+# updates $BASE instead of the delivery branch.
+git worktree add --no-track -b "$BRANCH" "$PARENT/${NAME}-wt-${SLUG}" "$UPSTREAM/$BASE"
 ```
 
 If that path exists, stop and reuse or pick a new slug — do not clobber.
 
-All later commands run with cwd = that worktree.
+Immediately verify the new branch has **no** upstream. Run this in the new worktree and stop if it fails:
+
+```bash
+upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)
+if [ -n "$upstream" ]; then
+  git branch --unset-upstream
+  upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)
+fi
+test -z "$upstream"
+git status -sb   # must be "## $BRANCH" with no "..." tracking suffix
+```
+
+`@{upstream}` printing `$UPSTREAM/$BASE` or `refs/heads/$BASE` means the branch is still aimed at the branch it was cut from. Unset it and re-check. Do not commit, and do not push, until this check passes.
+
+All later commands run with cwd = that worktree. Do not run a bare `git push` (no refspec) at any point in this pipeline.
 
 ### 3. Phase the increment
 
@@ -132,8 +149,19 @@ Failing CI-equivalent → fix in the worktree, do not open the PR.
 
 ### 7. Draft PR
 
+Push with an explicit destination ref. A bare `git push`, or `git push "$UPSTREAM"`, follows `branch.$BRANCH.merge` and will update `$BASE` when that config is wrong.
+
 ```bash
-git push -u "$UPSTREAM" "$BRANCH"
+upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)
+case "$upstream" in
+  ""|"$UPSTREAM/$BRANCH") ;;
+  *)
+    echo "refusing to push: upstream is '$upstream', not '$UPSTREAM/$BRANCH'" >&2
+    exit 1
+    ;;
+esac
+git push -u "$UPSTREAM" "HEAD:refs/heads/$BRANCH"
+test "$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "$UPSTREAM/$BRANCH"
 gh pr create --repo OWNER/REPO --draft --base "$BASE" --head "$BRANCH" \
   --title "<type>(<scope>): <english subject>" \
   --body-file -
@@ -165,3 +193,4 @@ Omit `Closes` for oral goals. Reply with the PR URL. Do not merge.
 - PASS / product verdicts stay whatever the target repo already owns.
 - Do not push from the user's primary dirty checkout.
 - Do not delete the worktree unless the user asks.
+- The delivery branch must not track `$UPSTREAM/$BASE`. `git worktree add -b` against a remote-tracking start point tracks that start point unless `--no-track` is passed. After create, `@{upstream}` must be empty. After the step-7 push, it must be `$UPSTREAM/$BRANCH`. A bare `git push` is forbidden for the whole pipeline.
